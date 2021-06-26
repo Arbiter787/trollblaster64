@@ -39,11 +39,51 @@ class Axe(Equippable):
         super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=4)
 
 
+class WoodShield(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.SHIELD, defense_bonus=1)
+
+
+class IronShield(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.SHIELD, defense_bonus=3)
+
+
 class LeatherArmor(Equippable):
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=1)
+        super().__init__(equipment_type=EquipmentType.CHEST, defense_bonus=1)
 
 
 class ChainMail(Equippable):
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=3)
+        super().__init__(equipment_type=EquipmentType.CHEST, defense_bonus=3)
+
+
+class IronHelmet(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.HEAD, defense_bonus=1)
+
+
+class LeatherPants(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.LEGS, defense_bonus=1)
+
+
+class ChainLeggings(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.LEGS, defense_bonus=3)
+
+
+class LeatherGloves(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.HANDS, defense_bonus=1)
+
+
+class LeatherBoots(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.FEET, defense_bonus=1)
+
+
+class IronBoots(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.FEET, defense_bonus=2)

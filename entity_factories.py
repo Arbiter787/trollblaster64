@@ -6,7 +6,7 @@ from components.inventory import Inventory
 from components.level import Level
 from entity import Actor, Item
 
-
+# PLAYER
 player = Actor(
     char="@",
     color=(255, 255, 255),
@@ -18,6 +18,7 @@ player = Actor(
     level=Level(level_up_base=200),
 )
 
+# ENEMIES
 orc = Actor(
     char="o",
     color=(63, 127, 63),
@@ -49,7 +50,7 @@ ogre = Actor(
     level=Level(xp_given=250),
 )
 
-
+# CONSUMABLES
 confusion_scroll = Item(
     char="~",
     color=(207, 63, 255),
@@ -66,7 +67,7 @@ health_kit = Item(
     char="+",
     color=(127, 0, 255),
     name="Health Kit",
-    consumable=consumable.HealingConsumable(amount=4),
+    consumable=consumable.HealingConsumable(amount=10),
 )
 lightning_scroll = Item(
     char="~",
@@ -75,6 +76,7 @@ lightning_scroll = Item(
     consumable=consumable.LightningDamageConsumable(damage=10, maximum_range=5),
 )
 
+# WEAPONS
 dagger = Item(
     char="/",
     color=(0, 191, 255),
@@ -94,6 +96,21 @@ axe = Item(
     equippable=equippable.Axe()
 )
 
+# SHIELDS
+wood_shield = Item(
+    char=")",
+    color=(107, 94, 56),
+    name="Wooden Shield",
+    equippable=equippable.WoodShield()
+)
+iron_shield = Item(
+    char=")",
+    color=(120, 120, 120),
+    name="Iron Shield",
+    equippable=equippable.IronShield()
+)
+
+# CHEST ARMOR
 leather_armor = Item(
     char="[",
     color=(139, 69, 19),
@@ -102,7 +119,51 @@ leather_armor = Item(
 )
 chain_mail = Item(
     char="[",
-    color=(139, 69, 19),
+    color=(120, 120, 120),
     name="Chain Mail",
     equippable=equippable.ChainMail()
+)
+
+# HELMETS
+iron_helmet = Item(
+    char="[",
+    color=(120, 120, 120),
+    name="Iron Helmet",
+    equippable=equippable.IronHelmet()
+)
+
+# LEGGINGS
+leather_pants = Item(
+    char="[",
+    color=(139, 69, 19),
+    name="Leather Pants",
+    equippable=equippable.LeatherPants()
+)
+chain_leggings = Item(
+    char="[",
+    color=(120, 120, 120),
+    name="Chain Leggings",
+    equippable=equippable.ChainLeggings()
+)
+
+# GLOVES
+leather_gloves = Item(
+    char="[",
+    color=(139, 69, 19),
+    name="Leather Gloves",
+    equippable=equippable.LeatherGloves()
+)
+
+# BOOTS
+leather_boots = Item(
+    char="[",
+    color=(139, 69, 19),
+    name="Leather Boots",
+    equippable=equippable.LeatherBoots()
+)
+iron_boots = Item(
+    char="[",
+    color=(120, 120, 120),
+    name="Iron Boots",
+    equippable=equippable.IronBoots()
 )

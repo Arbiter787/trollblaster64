@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Tuple, TYPE_CHECKING
 
 from components.base_component import BaseComponent
 from equipment_types import EquipmentType
@@ -12,19 +12,45 @@ if TYPE_CHECKING:
 class Equipment(BaseComponent):
     parent: Actor
 
-    def __init__(self, weapon: Optional[Item] = None, armor: Optional[Item] = None):
+    def __init__(
+        self,
+        weapon: Optional[Item] = None,
+        shield: Optional[Item] = None,
+        chest: Optional[Item] = None,
+        head: Optional[Item] = None,
+        legs: Optional[Item] = None,
+        hands: Optional[Item] = None,
+        feet: Optional[Item] = None,
+    ):
         self.weapon = weapon
-        self.armor = armor
+        self.shield = shield
+        self.chest = chest
+        self.head = head
+        self.legs = legs
+        self.hands = hands
+        self.feet = feet
+
+    @property
+    def slots(self) -> list[Tuple[str, Item]]:
+        slots = [
+            ("weapon", self.weapon),
+            ("shield", self.shield),
+            ("chest", self.chest),
+            ("head", self.head),
+            ("legs", self.legs),
+            ("hands", self.hands),
+            ("feet", self.feet),
+        ]
+        return slots
 
     @property
     def defense_bonus(self) -> int:
         bonus = 0
 
-        if self.weapon is not None and self.weapon.equippable is not None:
-            bonus += self.weapon.equippable.defense_bonus
-
-        if self.armor is not None and self.armor.equippable is not None:
-            bonus += self.armor.equippable.defense_bonus
+        for i in self.slots:  # Iterate through the list of slots and add each bonus
+            slot, item = i
+            if item is not None and item.equippable is not None:
+                bonus += item.equippable.defense_bonus
 
         return bonus
 
@@ -32,16 +58,19 @@ class Equipment(BaseComponent):
     def power_bonus(self) -> int:
         bonus = 0
 
-        if self.weapon is not None and self.weapon.equippable is not None:
-            bonus += self.weapon.equippable.power_bonus
-
-        if self.armor is not None and self.armor.equippable is not None:
-            bonus += self.armor.equippable.power_bonus
+        for i in self.slots:  # Iterate through the list of slots and add each bonus
+            slot, item = i
+            if item is not None and item.equippable is not None:
+                bonus += item.equippable.power_bonus
 
         return bonus
 
     def item_is_equipped(self, item: Item) -> bool:
-        return self.weapon == item or self.armor == item
+        for i in self.slots:
+            slot, slot_item = i
+            if slot_item == item:
+                return True
+        return False
 
     def unequip_message(self, item_name: str) -> None:
         self.parent.gamemap.engine.message_log.add_message(
@@ -73,15 +102,23 @@ class Equipment(BaseComponent):
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
-        if (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.WEAPON
-        ):
-            slot = "weapon"
-        else:
-            slot = "armor"
+        if equippable_item.equippable:
+            if equippable_item.equippable.equipment_type == EquipmentType.WEAPON:
+                slot = "weapon"
+            elif equippable_item.equippable.equipment_type == EquipmentType.SHIELD:
+                slot = "shield"
+            elif equippable_item.equippable.equipment_type == EquipmentType.CHEST:
+                slot = "chest"
+            elif equippable_item.equippable.equipment_type == EquipmentType.HEAD:
+                slot = "head"
+            elif equippable_item.equippable.equipment_type == EquipmentType.LEGS:
+                slot = "legs"
+            elif equippable_item.equippable.equipment_type == EquipmentType.HANDS:
+                slot = "hands"
+            else:
+                slot = "feet"
 
-        if getattr(self, slot) == equippable_item:
-            self.unequip_from_slot(slot, add_message)
-        else:
-            self.equip_to_slot(slot, equippable_item, add_message)
+            if getattr(self, slot) == equippable_item:
+                self.unequip_from_slot(slot, add_message)
+            else:
+                self.equip_to_slot(slot, equippable_item, add_message)

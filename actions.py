@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
 import color
@@ -148,13 +150,24 @@ class MeleeAction(ActionWithDirection):
         target = self.target_actor
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
-        damage = self.entity.fighter.power - target.fighter.defense  # Damage = Power-Defense
+        # Damage = (attack power / defense + 1) - (1/5 defense) rounded up TODO: work out a better defense calc
+        damage = math.ceil((self.entity.fighter.power / (target.fighter.defense + 1)) - (target.fighter.defense / 5))
+        if damage < 0:
+            damage = 0
 
         attack_desc = f"{self.entity.name.capitalize()} kicks {target.name}"
         if self.entity is self.engine.player:
             attack_color = color.player_atk
         else:
             attack_color = color.enemy_atk
+
+        # Calculate dodge chance (for now hardcoded at 25%) TODO: Add dodge modifier system
+        if random.random() < 0.25:
+            self.engine.message_log.add_message(
+                f"{self.entity.name.capitalize()} misses {target.name}.",
+                attack_color
+            )
+            return None
 
         if damage > 0:
             self.engine.message_log.add_message(
