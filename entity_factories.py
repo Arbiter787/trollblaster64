@@ -87,6 +87,12 @@ sword = Item(
     name="Sword",
     equippable=equippable.Sword()
 )
+axe = Item(
+    char="/",
+    color=(0, 191, 255),
+    name="Axe",
+    equippable=equippable.Axe()
+)
 
 leather_armor = Item(
     char="[",
