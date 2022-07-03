@@ -1,4 +1,5 @@
 from components.ai import HostileEnemy
+from components.actoractions import ActorAction
 from components import consumable, equippable
 from components.equipment import Equipment
 from components.fighter import Fighter
@@ -12,6 +13,7 @@ player = Actor(
     color=(255, 255, 255),
     name="Player",
     ai_cls=HostileEnemy,
+    actions=ActorAction(),
     equipment=Equipment(),
     fighter=Fighter(hp=30, base_defense=1, base_power=2),
     inventory=Inventory(capacity=26),
@@ -24,6 +26,7 @@ orc = Actor(
     color=(63, 127, 63),
     name="Orc",
     ai_cls=HostileEnemy,
+    actions=ActorAction(),
     equipment=Equipment(),
     fighter=Fighter(hp=10, base_defense=0, base_power=3),
     inventory=Inventory(capacity=0),
@@ -34,6 +37,7 @@ troll = Actor(
     color=(0, 127, 0),
     name="Troll",
     ai_cls=HostileEnemy,
+    actions=ActorAction(),
     equipment=Equipment(),
     fighter=Fighter(hp=16, base_defense=1, base_power=5),
     inventory=Inventory(capacity=0),
@@ -44,6 +48,7 @@ ogre = Actor(
     color=(0, 82, 0),
     name="Ogre",
     ai_cls=HostileEnemy,
+    actions=ActorAction(),
     equipment=Equipment(),
     fighter=Fighter(hp=30, base_defense=2, base_power=8),
     inventory=Inventory(capacity=0),

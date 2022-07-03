@@ -5,6 +5,8 @@ import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
 import color
+from components.equippable import Equippable
+from equipment_types import EquipmentType
 import exceptions
 
 if TYPE_CHECKING:
@@ -13,9 +15,10 @@ if TYPE_CHECKING:
 
 
 class Action:
-    def __init__(self, entity: Actor) -> None:
+    def __init__(self, entity: Actor, actions: int = 1) -> None:
         super().__init__()
         self.entity = entity
+        self.actions = actions
 
     @property
     def engine(self) -> Engine:
@@ -54,6 +57,7 @@ class PickupAction(Action):
                 item.parent = self.entity.inventory
                 inventory.items.append(item)
 
+                self.entity.actions.deduct_actions(self.actions)
                 self.engine.message_log.add_message(f"You pick up the {item.name}.")
                 return
 
@@ -78,29 +82,38 @@ class ItemAction(Action):
     def perform(self) -> None:
         """Invoke the item's ability. This action will be given to provide context."""
         if self.item.consumable:
+            self.entity.actions.deduct_actions(self.actions)
             self.item.consumable.activate(self)
 
 
 class DropItem(ItemAction):
     def perform(self) -> None:
+        """Remove the item from the inventory. If it's equipped, unequip it first. Dropping a weapon is a free action."""
         if self.entity.equipment.item_is_equipped(self.item):
-            self.entity.equipment.toggle_equip(self.item)
+            self.entity.equipment.toggle_equip(self.item, True)
+            if self.item.equippable.equipment_type != EquipmentType.WEAPON:
+                self.entity.actions.deduct_actions(self.actions)
+        else:
+            self.entity.actions.deduct_actions(self.actions)
 
         self.entity.inventory.drop(self.item)
 
 
 class EquipAction(Action):
     def __init__(self, entity: Actor, item: Item):
+        """Equip/unequip the item."""
         super().__init__(entity)
 
         self.item = item
 
     def perform(self) -> None:
+        self.entity.actions.deduct_actions(self.actions)
         self.entity.equipment.toggle_equip(self.item)
 
 
 class WaitAction(Action):
     def perform(self) -> None:
+        self.entity.actions.deduct_actions(self.actions)
         pass
 
 
@@ -111,6 +124,7 @@ class TakeStairsAction(Action):
         """
         if (self.entity.x, self.entity.y) == self.engine.game_map.downstairs_location:
             self.engine.game_world.generate_floor()
+            self.entity.actions.deduct_actions(self.actions)
             self.engine.message_log.add_message(
                 "You descend the staircase.", color.descend
             )
@@ -155,6 +169,7 @@ class MeleeAction(ActionWithDirection):
         if damage < 0:
             damage = 0
 
+        self.entity.actions.deduct_actions(self.actions)
         attack_desc = f"{self.entity.name.capitalize()} kicks {target.name}"
         if self.entity is self.engine.player:
             attack_color = color.player_atk
@@ -195,6 +210,7 @@ class MovementAction(ActionWithDirection):
             # Destination is blocked by an entity.
             raise exceptions.Impossible("That way is blocked.")
 
+        self.entity.actions.deduct_actions(self.actions)
         self.entity.move(self.dx, self.dy)
 
 

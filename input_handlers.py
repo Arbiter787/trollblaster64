@@ -15,6 +15,7 @@ from actions import (
 )
 import color
 import exceptions
+import time
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -145,10 +146,16 @@ class EventHandler(BaseEventHandler):
         except exceptions.Impossible as exc:
             self.engine.message_log.add_message(exc.args[0], color.impossible)
             return False  # Skip enemy turn on exceptions.
+        
+        self.engine.update_fov()
+        if not self.engine.player.actions.out_of_actions:
+            return True  # Don't progress to enemy turn until out of actions.
 
+        self.engine.init_next_turn()   
         self.engine.handle_enemy_turns()
 
-        self.engine.update_fov()
+        self.engine.player.actions.restore_actions()
+
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:

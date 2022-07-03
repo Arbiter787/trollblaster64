@@ -59,3 +59,11 @@ def render_names_at_mouse_location(
     )
 
     console.print(x=x, y=y, string=names_at_mouse_location)
+
+def render_actions(
+    console: Console, actions: int, location: Tuple[int, int]
+) -> None:
+    """Render the actions remaining to the player."""
+    x, y = location
+
+    console.print(x=x, y=y, string=f"Actions: {actions}")

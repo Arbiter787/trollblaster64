@@ -24,14 +24,22 @@ class Engine:
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
-
+    
     def handle_enemy_turns(self) -> None:
+        """Iterate through all actors with AI and spend their actions."""
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
-                try:
-                    entity.ai.perform()
-                except exceptions.Impossible:
-                    pass  # Ignore impossible action exceptions from AI.
+                while not entity.actions.out_of_actions:
+                    try:
+                        entity.ai.perform()
+                    except exceptions.Impossible:
+                        pass  # Ignore impossible action exceptions from AI.
+
+    def init_next_turn(self) -> None:
+        """Perform prep before the next enemy turn, such as restoring actions."""
+        for entity in set(self.game_map.actors) - {self.player}:
+            if entity.ai:
+                entity.actions.restore_actions()
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the player's point of view."""
@@ -59,6 +67,12 @@ class Engine:
             console=console,
             dungeon_level=self.game_world.current_floor,
             location=(0, 47),
+        )
+
+        render_functions.render_actions(
+            console=console,
+            actions=self.player.actions.remaining_actions,
+            location=(0, 48),
         )
 
         render_functions.render_names_at_mouse_location(

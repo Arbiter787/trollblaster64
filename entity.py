@@ -7,6 +7,7 @@ from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 from render_order import RenderOrder
 
 if TYPE_CHECKING:
+    from components.actoractions import ActorAction
     from components.ai import BaseAI
     from components.consumable import Consumable
     from components.equipment import Equipment
@@ -95,6 +96,7 @@ class Actor (Entity):
         color: Tuple[int, int, int] = (255, 255, 255),
         name: str = "<Unnamed>",
         ai_cls: Type[BaseAI],
+        actions: ActorAction,
         equipment: Equipment,
         fighter: Fighter,
         inventory: Inventory,
@@ -111,6 +113,9 @@ class Actor (Entity):
         )
 
         self.ai: Optional[BaseAI] = ai_cls(self)
+        
+        self.actions = actions
+        self.actions.parent = self
 
         self.equipment: Equipment = equipment
         self.equipment.parent = self
@@ -128,6 +133,11 @@ class Actor (Entity):
     def is_alive(self) -> bool:
         """Returns True as long as this actor can perform actions."""
         return bool(self.ai)
+    
+    @property
+    def get_actions(self) -> int:
+        """Returns number of actions remaining in this actor's turn."""
+        return int(self.actions)
 
 
 class Item(Entity):
