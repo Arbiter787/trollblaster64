@@ -23,7 +23,8 @@ def main() -> None:
     flags = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
 
     tileset = tcod.tileset.load_tilesheet(
-        "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+        #"dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+        "Talryth_square_15x15.png",16 ,16, tcod.tileset.CHARMAP_CP437
     )
 
     handler: input_handlers.BaseEventHandler = input_handlers.MainMenu()
@@ -38,7 +39,7 @@ def main() -> None:
     ) as context:
         try:
             while True:
-                root_console = context.new_console(order="F")
+                root_console = context.new_console(magnification=1, order="F")
                 handler.on_render(console=root_console)
                 context.present(root_console, integer_scaling=True)
 
