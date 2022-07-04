@@ -151,6 +151,12 @@ lightning_scroll = Item(
     name="Lightning Scroll",
     consumable=consumable.LightningDamageConsumable(damage=10, maximum_range=5),
 )
+teleport_scroll = Item(
+    char="~",
+    color=color.grey,
+    name="Teleportation Scroll",
+    consumable=consumable.TeleportConsumable(maximum_range=50),
+)
 
 # WEAPONS
 dagger = Item(

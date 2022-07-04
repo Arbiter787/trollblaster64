@@ -9,6 +9,7 @@ import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
 import input_handlers
+import random
 
 if TYPE_CHECKING:
     from entity import Actor, Item
@@ -153,3 +154,62 @@ class LightningDamageConsumable(Consumable):
             self.consume()
         else:
             raise Impossible("No enemy is close enough to strike.")
+    
+class TeleportConsumable(Consumable):
+    def __init__(self, maximum_range: int):
+        self.maximum_range = maximum_range
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        target = None
+        closest_distance = self.maximum_range
+
+        already_chosen: list[tuple(int, int)] = [(consumer.x, consumer.y)]
+
+        valid_tile = None
+
+        for x in range(closest_distance ** 2):
+            potential_x = 0
+            potential_y = 0 
+            
+            while True:
+                potential_x = random.randint(consumer.x - closest_distance, consumer.x + closest_distance)
+                potential_y = random.randint(consumer.y - closest_distance, consumer.y + closest_distance)
+
+                potential_tile = (potential_x, potential_y)
+
+                if potential_tile in already_chosen:
+                    continue
+                else:
+                    break
+            
+            already_chosen.append(potential_tile)
+
+            # make sure tile is in bounds and walkable
+            if not self.engine.game_map.in_bounds(*potential_tile):
+                continue
+            elif not self.engine.game_map.tiles["walkable"][potential_x, potential_y]:
+                continue
+            
+            # check for actors in potential tile
+            actor_occupying = False
+            for entity in self.engine.game_map.actors:
+                if entity.x == potential_x and entity.y == potential_y:
+                    actor_occupying = True
+            if actor_occupying:
+                continue
+            
+            valid_tile = potential_tile
+            break
+
+
+        if valid_tile is None:
+            raise Impossible("There is nowhere to teleport to!")
+        else:
+            self.engine.message_log.add_message(
+                "With a loud *pop*, you teleport away."
+            )
+            
+            consumer.x = valid_tile[0]
+            consumer.y = valid_tile[1]
+            self.consume()
