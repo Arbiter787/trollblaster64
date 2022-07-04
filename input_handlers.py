@@ -1,4 +1,5 @@
 from __future__ import annotations
+from hashlib import new
 
 import os
 
@@ -8,6 +9,7 @@ import tcod.event
 import traceback
 
 import actions
+import animations
 from actions import (
     Action,
     BumpAction,
@@ -116,8 +118,9 @@ class PopupMessage(BaseEventHandler):
 
 
 class EventHandler(BaseEventHandler):
-    def __init__(self, engine: Engine):
+    def __init__(self, engine: Engine, animation: Optional[list[animations.BaseAnimation]] = []):
         self.engine = engine
+        self.animation = animation
 
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle events for input handlers with an engine."""
@@ -133,7 +136,7 @@ class EventHandler(BaseEventHandler):
                 return GameOverEventHandler(self.engine)
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
-            return MainGameEventHandler(self.engine)  # Return to the main handler.
+            return MainGameEventHandler(self.engine, self.animation)  # Return to the main handler.
         return self
 
     def handle_action(self, action: Optional[Action]) -> bool:
@@ -145,22 +148,39 @@ class EventHandler(BaseEventHandler):
             return False
 
         try:
-            action.perform()
+            new_animations = action.perform()
+
+            # get any animations from the action and append them to queued animations
+            if new_animations is not None:
+                if len(new_animations) > 0:
+                    for i in new_animations:
+                        self.animation.append(i)
+
         except exceptions.Impossible as exc:
             self.engine.message_log.add_message(exc.args[0], color.impossible)
             return False  # Skip enemy turn on exceptions.
 
-        self.engine.handle_enemy_turns()
+        new_animations = self.engine.handle_enemy_turns()
+        if len(new_animations) > 0:
+            for i in new_animations:
+                self.animation.append(i)
 
         self.engine.update_fov()
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
-        if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
-            self.engine.mouse_location = event.tile.x, event.tile.y
+        if self.engine.game_map.in_bounds(event.tile.x - self.engine.viewport.x_offset, event.tile.y - self.engine.viewport.y_offset):
+            self.engine.mouse_location = event.tile.x - self.engine.viewport.x_offset, event.tile.y - self.engine.viewport.y_offset
 
     def on_render(self, console: tcod.Console) -> None:
         self.engine.render(console)
+
+        # check if any animations are queued to play
+        if len(self.animation) > 0:
+            for i in self.animation:
+                done = i.anim_render(console, self.engine)
+                if done:
+                    self.animation.remove(i)  # when animations are done, remove them from queue
 
 
 class AskUserEventHandler(EventHandler):
@@ -472,8 +492,8 @@ class SelectIndexHandler(AskUserEventHandler):
         """Highlight the tile under the cursor."""
         super().on_render(console)
         x, y = self.engine.mouse_location
-        console.rgb["bg"][x, y] = color.white
-        console.rgb["fg"][x, y] = color.black
+        console.rgb["bg"][x+self.engine.viewport.x_offset, y+self.engine.viewport.y_offset] = color.white
+        console.rgb["fg"][x+self.engine.viewport.x_offset, y+self.engine.viewport.y_offset] = color.black
 
     def ev_keydown(self, event: "tcod.event.KeyDown") -> Optional[ActionOrHandler]:
         """Check for key movement or confirmation keys."""
@@ -502,9 +522,15 @@ class SelectIndexHandler(AskUserEventHandler):
         self, event: tcod.event.MouseButtonDown
     ) -> Optional[ActionOrHandler]:
         """Left click confirms a selection."""
-        if self.engine.game_map.in_bounds(*event.tile):
+        
+        x, y = event.tile
+
+        mod_x = x - self.engine.viewport.x_offset
+        mod_y = y - self.engine.viewport.y_offset
+
+        if self.engine.game_map.in_bounds(mod_x, mod_y):
             if event.button == 1:
-                return self.on_index_selected(*event.tile)
+                return self.on_index_selected(mod_x, mod_y)
             return super().ev_mousebuttondown(event)
 
     def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
@@ -556,8 +582,8 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
         # Draw a rectangle around the targeted area, so the player can see the affected tiles.
         console.draw_frame(
-            x=x - self.radius - 1,
-            y=y - self.radius - 1,
+            x= x - self.radius - 1 + self.engine.viewport.x_offset,
+            y=y - self.radius - 1 + self.engine.viewport.y_offset,
             width=self.radius ** 2,
             height=self.radius ** 2,
             fg=color.red,

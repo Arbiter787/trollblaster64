@@ -5,6 +5,7 @@ from dice import dice_roller
 from typing import Optional, Tuple, TYPE_CHECKING
 
 from equipment_types import EquipmentTraits
+from animations import AttackAnimation
 
 import color
 import exceptions
@@ -148,7 +149,7 @@ class ActionWithDirection(Action):
 
 class MeleeAction(ActionWithDirection):
     """Attack another actor immediately adjacent to the parent actor."""
-    def perform(self) -> None:
+    def perform(self) -> Optional[list[AttackAnimation]]:
         target = self.target_actor
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
@@ -159,6 +160,8 @@ class MeleeAction(ActionWithDirection):
             attack_color = color.enemy_atk
 
         last_attack_hit = False
+
+        hit_animations = []
 
         for i in range(self.entity.fighter.attacks_per_round):
             
@@ -253,7 +256,9 @@ class MeleeAction(ActionWithDirection):
                     f"{attack_desc} for {damage} damage.", attack_color
                 )
                 target.fighter.hp -= damage
+                
                 last_attack_hit = True
+                hit_animations.append(AttackAnimation(target, self.entity))
 
                 # don't keep attacking if they die!
                 if not target.is_alive:
@@ -264,6 +269,8 @@ class MeleeAction(ActionWithDirection):
                     f"{self.entity.name.capitalize()} misses {target.name}.", attack_color
                 )
                 last_attack_hit = False
+        
+        return hit_animations
 
 
 class MovementAction(ActionWithDirection):

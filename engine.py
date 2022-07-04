@@ -14,24 +14,35 @@ import render_functions
 if TYPE_CHECKING:
     from entity import Actor
     from game_map import GameMap, GameWorld
+    from animations import BaseAnimation
+    from viewport import Viewport
 
 
 class Engine:
     game_map: GameMap
     game_world: GameWorld
+    viewport: Viewport
 
     def __init__(self, player: Actor):
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
 
-    def handle_enemy_turns(self) -> None:
+    def handle_enemy_turns(self) -> list[BaseAnimation]:
+        animations = []
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
                 try:
-                    entity.ai.perform()
+                    # get any animations caused by ai actions
+                    new_animation = entity.ai.perform()
+                    if new_animation is not None:
+                        if len(new_animation) > 0:
+                            for i in new_animation:
+                                animations.append(i)
                 except exceptions.Impossible:
                     pass  # Ignore impossible action exceptions from AI.
+        
+        return animations
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the player's point of view."""
@@ -44,9 +55,9 @@ class Engine:
         self.game_map.explored |= self.game_map.visible
 
     def render(self, console: Console) -> None:
-        self.game_map.render(console)
+        self.viewport.render(console)
 
-        self.message_log.render(console=console, x=21, y=45, width=40, height=5)
+        self.message_log.render(console=console, x=21, y=console.height-5, width=40, height=5)
 
         render_functions.render_bar(
             console=console,
@@ -58,11 +69,11 @@ class Engine:
         render_functions.render_dungeon_level(
             console=console,
             dungeon_level=self.game_world.current_floor,
-            location=(0, 47),
+            location=(0, console.height-2),
         )
 
         render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=44, engine=self
+            console=console, x=21, y=console.height-5, engine=self
         )
 
     def save_as(self, filename: str) -> None:

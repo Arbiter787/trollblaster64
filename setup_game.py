@@ -12,6 +12,7 @@ import color
 from engine import Engine
 import entity_factories
 from game_map import GameWorld
+from viewport import Viewport
 
 
 # Load the background image and remove the alpha channel.
@@ -20,8 +21,8 @@ background_image = tcod.image.load("menu_background.png")[:, :, :3]
 
 def new_game() -> Engine:
     """Return a brand new game session as an Engine instance."""
-    map_width = 80
-    map_height = 43
+    map_width = 100
+    map_height = 60
 
     room_max_size = 10
     room_min_size = 6
@@ -42,6 +43,8 @@ def new_game() -> Engine:
     )
 
     engine.game_world.generate_floor()
+
+    engine.viewport = Viewport(engine=engine)
     engine.update_fov()
 
     engine.message_log.add_message(

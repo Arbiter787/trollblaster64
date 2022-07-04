@@ -17,8 +17,10 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
 
 
 def main() -> None:
-    screen_width = 80
-    screen_height = 50
+    screen_width = 720
+    screen_height = 480
+
+    flags = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
 
     tileset = tcod.tileset.load_tilesheet(
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
@@ -26,22 +28,22 @@ def main() -> None:
 
     handler: input_handlers.BaseEventHandler = input_handlers.MainMenu()
 
-    with tcod.context.new_terminal(
-        screen_width,
-        screen_height,
+    with tcod.context.new(
+        width=screen_width,
+        height=screen_height,
         tileset=tileset,
         title="RL Project",
         vsync=True,
+        sdl_window_flags=flags
     ) as context:
-        root_console = tcod.Console(screen_width, screen_height, order="F")
         try:
             while True:
-                root_console.clear()
+                root_console = context.new_console(order="F")
                 handler.on_render(console=root_console)
-                context.present(root_console)
+                context.present(root_console, integer_scaling=True)
 
                 try:
-                    for event in tcod.event.wait():
+                    for event in tcod.event.get():
                         context.convert_event(event)
                         handler = handler.handle_events(event)
                 except Exception:  # Handle exceptions in game.
