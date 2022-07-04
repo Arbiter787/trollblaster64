@@ -7,12 +7,13 @@ from components.fighter import Monster, Player
 from components.inventory import Inventory
 from components.level import Level
 from entity import Actor, Item
+import color
 import components.classes
 
 # PLAYER
 player = Actor(
     char="@",
-    color=(255, 255, 255),
+    color=color.white,
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -128,25 +129,25 @@ ogre = Actor(
 # CONSUMABLES
 confusion_scroll = Item(
     char="~",
-    color=(207, 63, 255),
+    color=color.purple,
     name="Confusion Scroll",
     consumable=consumable.ConfusionConsumable(number_of_turns=5),
 )
 fireball_scroll = Item(
     char="~",
-    color=(255, 0, 0),
+    color=color.red,
     name="Fireball Scroll",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
 )
 health_kit = Item(
     char="+",
-    color=(127, 0, 255),
+    color=color.purple,
     name="Health Kit",
     consumable=consumable.HealingConsumable(amount=20),
 )
 lightning_scroll = Item(
     char="~",
-    color=(0, 255, 255),
+    color=color.yellow,
     name="Lightning Scroll",
     consumable=consumable.LightningDamageConsumable(damage=10, maximum_range=5),
 )
@@ -154,7 +155,7 @@ lightning_scroll = Item(
 # WEAPONS
 dagger = Item(
     char="/",
-    color=(0, 191, 255),
+    color=color.grey,
     name="Dagger",
     equippable=Equippable(
         equipment_type=EquipmentType.WEAPON,
@@ -164,9 +165,9 @@ dagger = Item(
         die_size=4,
     )
 )
-sword = Item(
+shortsword = Item(
     char="/",
-    color=(0, 191, 255),
+    color=color.grey,
     name="Shortsword",
     equippable=Equippable(
         equipment_type=EquipmentType.WEAPON,
@@ -176,9 +177,34 @@ sword = Item(
         die_size=6,
     )
 )
+longsword = Item(
+    char="/",
+    color=color.grey,
+    name="Longsword",
+    equippable=Equippable(
+        equipment_type=EquipmentType.WEAPON,
+        equipment_category=EquipmentCategory.MARTIAL,
+        equipment_traits=[EquipmentTraits.VERSATILE_P],
+        num_dice=1,
+        die_size=8,
+    )
+)
+rapier = Item(
+    char="/",
+    color=color.grey,
+    name="Rapier",
+    equippable=Equippable(
+        equipment_type=EquipmentType.WEAPON,
+        equipment_category=EquipmentCategory.MARTIAL,
+        equipment_traits=[EquipmentTraits.DEADLY, EquipmentTraits.DISARM, EquipmentTraits.FINESSE],
+        num_dice=1,
+        die_size=6,
+        crit_bonus=[1, 8],
+    )
+)
 axe = Item(
     char="/",
-    color=(0, 191, 255),
+    color=color.grey,
     name="Battle axe",
     equippable=Equippable(
         equipment_type=EquipmentType.WEAPON,
@@ -188,11 +214,35 @@ axe = Item(
         die_size=8,
     )
 )
+club = Item(
+    char="/",
+    color=color.brown,
+    name="Club",
+    equippable=Equippable(
+        equipment_type=EquipmentType.WEAPON,
+        equipment_category=EquipmentCategory.SIMPLE,
+        equipment_traits=[EquipmentTraits.THROWN],
+        num_dice=1,
+        die_size=6,
+    )
+)
+light_hammer = Item(
+    char="/",
+    color=color.grey,
+    name="Light hammer",
+    equippable=Equippable(
+        equipment_type=EquipmentType.WEAPON,
+        equipment_category=EquipmentCategory.MARTIAL,
+        equipment_traits=[EquipmentTraits.AGILE, EquipmentTraits.THROWN],
+        num_dice=1,
+        die_size=6,
+    )
+)
 
 # SHIELDS
 wood_shield = Item(
     char=")",
-    color=(107, 94, 56),
+    color=color.brown,
     name="Wooden Shield",
     equippable=Equippable(
         equipment_type=EquipmentType.SHIELD,
@@ -201,7 +251,7 @@ wood_shield = Item(
 )
 iron_shield = Item(
     char=")",
-    color=(120, 120, 120),
+    color=color.grey,
     name="Iron Shield",
     equippable=Equippable(
         equipment_type=EquipmentType.SHIELD,
@@ -212,7 +262,7 @@ iron_shield = Item(
 # CHEST ARMOR
 leather_armor = Item(
     char="[",
-    color=(139, 69, 19),
+    color=color.brown,
     name="Leather Armor",
     equippable=Equippable(
         equipment_type=EquipmentType.CHEST,
@@ -222,7 +272,7 @@ leather_armor = Item(
 )
 chain_mail = Item(
     char="[",
-    color=(120, 120, 120),
+    color=color.grey,
     name="Chain Mail",
     equippable=Equippable(
         equipment_type=EquipmentType.CHEST,

@@ -9,10 +9,11 @@ import tcod
 import entity_factories
 from game_map import GameMap
 import tile_types
+from equipment_types import EquipmentType
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity
+    from entity import Entity, Item
 
 # (floor, objects per room)
 max_items_by_floor = [
@@ -30,30 +31,35 @@ max_monsters_by_floor = [
 ]
 
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factories.health_kit, 50),],
+    0: [(entity_factories.health_kit, 50),
+        (entity_factories.club, 5),
+        (entity_factories.dagger, 5),
+        ],
     2: [
         (entity_factories.confusion_scroll, 10),
         (entity_factories.wood_shield, 5),
-        (entity_factories.axe, 5),
-        (entity_factories.sword, 5),
+        (entity_factories.leather_armor, 5),
+        (entity_factories.light_hammer, 5),
+        (entity_factories.shortsword, 5),
         ],
     4: [
         (entity_factories.lightning_scroll, 10),
         (entity_factories.axe, 5),
-        (entity_factories.sword, 5),
+        (entity_factories.longsword, 5),
+        (entity_factories.rapier, 5),
+        (entity_factories.iron_shield, 5),
+        (entity_factories.chain_mail, 5),
         ],
     6: [
         (entity_factories.fireball_scroll, 10),
-        (entity_factories.iron_shield, 5),
-        (entity_factories.chain_mail, 5),
         ],
 }
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [(entity_factories.goblin, 80)],
     2: [(entity_factories.orc, 10)],
-    4: [(entity_factories.ogre, 15), (entity_factories.orc, 30)],
-    6: [(entity_factories.goblin, 20), (entity_factories.orc, 60), (entity_factories.ogre, 30), (entity_factories.troll, 10)],
+    4: [(entity_factories.ogre, 10), (entity_factories.orc, 30)],
+    6: [(entity_factories.goblin, 10), (entity_factories.orc, 60), (entity_factories.ogre, 30), (entity_factories.troll, 10)],
     8: [(entity_factories.ogre, 60), (entity_factories.troll, 30)],
 }
 
@@ -139,9 +145,21 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
     monsters: List[Entity] = get_entities_at_random(
         enemy_chances, number_of_monsters, floor_number
     )
-    items: List[Entity] = get_entities_at_random(
+    items: List[Item] = get_entities_at_random(
         item_chances, number_of_items, floor_number
     )
+
+    for item in items:
+        if floor_number >= 3:
+            if item.equippable is not None:
+                if item.equippable.equipment_type == EquipmentType.WEAPON and random.randint(0, 1) == 1:
+                    item.equippable.die_size += 1
+                    item.equippable.hit_bonus += 1
+                    item.name = f"+1 striking {item.name}"
+                    if floor_number >= 6 and random.randint(0, 1) == 1:
+                        item.equippable.die_size += 1
+                        item.equippable.hit_bonus += 1
+                        item.name = f"+2 greater striking {item.name}"
 
     for entity in monsters + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)
