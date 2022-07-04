@@ -208,7 +208,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=8,
+            height=12,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -226,18 +226,40 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         console.print(
-            x=x + 1, y=y + 5, string=f"Attack: {self.engine.player.fighter.power}"
+            x=x + 1, y=y + 5, string=f"To-hit: {self.engine.player.fighter.damage[0]}"
         )
         console.print(
-            x=x + 1, y=y + 6, string=f"Defense: {self.engine.player.fighter.defense}"
+            x=x + 1, y=y + 6, string=f"AC: {self.engine.player.fighter.ac}"
+        )
+
+        console.print(
+            x=x + 1, y=y + 8, string=f"Str: {self.engine.player.fighter.str} (mod = {self.engine.player.fighter.str_mod})"
+        )
+        console.print(
+            x=x + 1, y=y + 9, string=f"Dex: {self.engine.player.fighter.dex} (mod = {self.engine.player.fighter.dex_mod})"
+        )
+        console.print(
+            x=x + 1, y=y + 10, string=f"Con: {self.engine.player.fighter.con} (mod = {self.engine.player.fighter.con_mod})"
         )
 
 
 class LevelUpEventHandler(AskUserEventHandler):
     TITLE = "Level Up"
 
+    # TODO: finish feats
+    def get_available_feats(self, feat_type: str, level: int) -> list[str]:
+        """Get the feats available for a specific category and level."""
+
+        if feat_type == 'class_feat':
+            player_class = self.engine.player.fighter.player_class.class_id
+
+            if player_class == 'fighter':
+                pass
+    
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
+
+        next_choice = self.engine.player.fighter.player_class.choice_reason[0]
 
         if self.engine.player.x <= 30:
             x = 40
@@ -248,7 +270,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             x=x,
             y=0,
             width=35,
-            height=8,
+            height=6,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -256,22 +278,31 @@ class LevelUpEventHandler(AskUserEventHandler):
         )
 
         console.print(x=x + 1, y=1, string="Congratulations! You leveled up!")
-        console.print(x=x + 1, y=2, string="Select an attribute to increase.")
+        if next_choice == 'class_feat':
+            console.print(x=x + 1, y=2, string="Select a class feat.")
+        
+        elif next_choice == 'skill_feat':
+            console.print(x=x + 1, y=2, string="Select a skill feat.")
+        
+        elif next_choice == 'general_feat':
+            console.print(x=x + 1, y=2, string="Select a general feat.")
+        
+        elif next_choice == 'ancestry_feat':
+            console.print(x=x + 1, y=2, string="Select an ancestry feat.")
+        
+        elif next_choice == 'skill_increase':
+            console.print(x=x + 1, y=2, string="Select a skill to increase.")
+        
+        elif next_choice == 'ability_boost':
+            console.print(x=x + 1, y=2, string="Select an ability score to boost by 2.")
+        
+        elif next_choice == 'weapon_group':
+            console.print(x=x + 1, y=2, string="Select a weapon group to specialize in.")
 
         console.print(
             x=x + 1,
             y=4,
             string=f"a) Constitution (+20 HP, from {self.engine.player.fighter.max_hp})",
-        )
-        console.print(
-            x=x + 1,
-            y=5,
-            string=f"b) Strength (+1 attack, from {self.engine.player.fighter.power})",
-        )
-        console.print(
-            x=x + 1,
-            y=6,
-            string=f"c) Agility (+1 defense, from {self.engine.player.fighter.defense})",
         )
 
     def ev_keydown(self, event: "tcod.event.KeyDown") -> Optional[ActionOrHandler]:
@@ -279,16 +310,13 @@ class LevelUpEventHandler(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.K_a
 
-        if 0 <= index <= 2:
-            if index == 0:
-                player.level.increase_max_hp()
-            elif index == 1:
-                player.level.increase_power()
-            else:
-                player.level.increase_defense()
+        #if 0 <= index <= 2:
+        if index == 0:
+            self.engine.player.level.increase_level()
+            self.engine.player.fighter.heal(self.engine.player.fighter.player_class.hp_boost // self.engine.player.level.current_level)
+            pass
         else:
             self.engine.message_log.add_message("Invalid entry.", color.invalid)
-
             return None
 
         return super().ev_keydown(event)

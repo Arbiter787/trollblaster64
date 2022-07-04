@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
 
-
+# (floor, objects per room)
 max_items_by_floor = [
     (1, 1),
     (4, 2),
@@ -36,23 +36,20 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factories.lightning_scroll, 25),
         (entity_factories.axe, 5),
         (entity_factories.sword, 5),
-        (entity_factories.leather_gloves, 5),
         ],
     6: [
         (entity_factories.fireball_scroll, 25),
         (entity_factories.iron_shield, 5),
         (entity_factories.chain_mail, 5),
-        (entity_factories.iron_helmet, 5),
-        (entity_factories.chain_leggings, 5),
-        (entity_factories.iron_boots, 5),
         ],
 }
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factories.orc, 80)],
-    3: [(entity_factories.troll, 15)],
-    5: [(entity_factories.troll, 30), (entity_factories.ogre, 10)],
-    7: [(entity_factories.troll, 60), (entity_factories.ogre, 30)],
+    0: [(entity_factories.goblin, 80)],
+    2: [(entity_factories.orc, 10)],
+    4: [(entity_factories.ogre, 15), (entity_factories.orc, 30)],
+    6: [(entity_factories.goblin, 20), (entity_factories.orc, 60), (entity_factories.ogre, 30), (entity_factories.troll, 10)],
+    8: [(entity_factories.ogre, 60), (entity_factories.troll, 30)],
 }
 
 

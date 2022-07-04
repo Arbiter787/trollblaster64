@@ -30,6 +30,7 @@ def new_game() -> Engine:
     max_rooms = 30
 
     player = copy.deepcopy(entity_factories.player)
+    player.fighter.heal(player.fighter.max_hp)
 
     engine = Engine(player=player)
 

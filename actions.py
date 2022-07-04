@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import math
-import random
+from dice import dice_roller
 from typing import Optional, Tuple, TYPE_CHECKING
+
+from equipment_types import EquipmentTraits
 
 import color
 import exceptions
@@ -150,34 +152,118 @@ class MeleeAction(ActionWithDirection):
         target = self.target_actor
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
-        # Damage = (attack power / defense + 1) - (1/5 defense) rounded up TODO: work out a better defense calc
-        damage = math.ceil((self.entity.fighter.power / (target.fighter.defense + 1)) - (target.fighter.defense / 5))
-        if damage < 0:
-            damage = 0
-
-        attack_desc = f"{self.entity.name.capitalize()} kicks {target.name}"
+        
         if self.entity is self.engine.player:
             attack_color = color.player_atk
         else:
             attack_color = color.enemy_atk
 
-        # Calculate dodge chance (for now hardcoded at 25%) TODO: Add dodge modifier system
-        if random.random() < 0.25:
+        last_attack_hit = False
+
+        for i in range(self.entity.fighter.attacks_per_round):
+            
+            # attack info format: [to hit, number of dice, die size, damage bonuses, equipment trait list, critical dice (tuple form)]
+            attack_info = self.entity.fighter.damage
+
+            to_hit = attack_info[0]
+            num_dice = attack_info[1]
+            die_size = attack_info[2]
+            dam_bonus = attack_info[3]
+            equipment_traits = attack_info[4]
+            crit_bonus = attack_info[5]
+
+            if crit_bonus is not None:
+                crit_num = crit_bonus[0]
+                crit_size = crit_bonus[1]
+
+            deadly = False
+            fatal = False
+
+            # TODO: pull data from entity instead of hardcode at 0
+            extra_attack_penalty_mod = 0
+
+            # modify attack based on the various item traits
+            if equipment_traits is not None:
+                for x in equipment_traits:
+                    if x == EquipmentTraits.AGILE:
+                        extra_attack_penalty_mod += 1
+                    elif x == EquipmentTraits.BACKSWING:
+                        if last_attack_hit == False:
+                            extra_attack_penalty_mod += 1
+                    elif x == EquipmentTraits.DEADLY:
+                        deadly = True
+                    elif x == EquipmentTraits.FATAL:
+                        fatal = True
+                    elif x == EquipmentTraits.FINESSE:
+                        # don't do finesse if the attack is from a monster, since finesse already factors into their to-hit
+                        if self.entity is self.engine.player:
+                            to_hit -= self.entity.fighter.str_mod
+                            to_hit += max(self.entity.fighter.dex_mod, self.entity.fighter.str_mod)
+                    elif x == EquipmentTraits.FORCEFUL:
+                        for z in range(i):
+                            dam_bonus += num_dice
+                    elif x == EquipmentTraits.SWEEP:
+                        extra_attack_penalty_mod += 1
+
+            # roll attack roll and add to-hit mod, for every attack besides the first in a round subtract 5 (can be modified by weapon)
+            nat_roll = dice_roller(1, 20)
+            to_hit = to_hit - i * (5 - extra_attack_penalty_mod)
+            attack_roll = nat_roll + to_hit
+
             self.engine.message_log.add_message(
-                f"{self.entity.name.capitalize()} misses {target.name}.",
+                f"{self.entity.name.capitalize()} rolls a {nat_roll} + {to_hit} to hit {target.name}.",
                 attack_color
             )
-            return None
 
-        if damage > 0:
-            self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} damage.", attack_color
-            )
-            target.fighter.hp -= damage
-        else:
-            self.engine.message_log.add_message(
-                f"{attack_desc} but does no damage.", attack_color
-            )
+            # if attack roll exceeds ac by more than 10 or is a nat 20 crit and deal double damage
+            if attack_roll >= target.fighter.ac:
+                if attack_roll - target.fighter.ac >= 10 or nat_roll == 20:
+                    
+                    # calculate fatal damage/normal crit damage
+                    if fatal == True:
+                        damage = dice_roller(num_dice + 1, crit_size) + dam_bonus * 2
+                    else:
+                        damage = dice_roller(num_dice, die_size) + dam_bonus * 2
+                    
+                    # if deadly then add the deadly dice
+                    if deadly == True:
+                        damage += dice_roller(crit_num, crit_size)
+                    
+                    # inform player of critical
+                    self.engine.message_log.add_message(
+                        "That was a critical hit!",
+                        attack_color
+                    )
+                else:
+                    damage = dice_roller(num_dice, die_size) + dam_bonus
+            
+            # if attack roll was a miss but was a nat 20 make it a hit
+            elif nat_roll == 20 and attack_roll - target.fighter.ac < 10:
+                damage = dice_roller(num_dice, die_size) + dam_bonus
+            
+            # miss
+            else:
+                damage = 0
+
+            # TODO: pull attack desc from attack itself
+            attack_desc = f"{self.entity.name.capitalize()} kicks {target.name}"
+
+            if damage > 0:
+                self.engine.message_log.add_message(
+                    f"{attack_desc} for {damage} damage.", attack_color
+                )
+                target.fighter.hp -= damage
+                last_attack_hit = True
+
+                # don't keep attacking if they die!
+                if not target.is_alive:
+                    break
+
+            else:
+                self.engine.message_log.add_message(
+                    f"{self.entity.name.capitalize()} misses {target.name}.", attack_color
+                )
+                last_attack_hit = False
 
 
 class MovementAction(ActionWithDirection):
@@ -194,6 +280,9 @@ class MovementAction(ActionWithDirection):
         if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
             # Destination is blocked by an entity.
             raise exceptions.Impossible("That way is blocked.")
+        
+        # debug logging messages here
+        #self.engine.message_log.add_message(f"ancestry: {self.engine.player.fighter.ancestry.hp_boost} class: {self.engine.player.fighter.player_class.hp_boost}")
 
         self.entity.move(self.dx, self.dy)
 

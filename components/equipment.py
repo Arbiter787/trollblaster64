@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING
 
 from components.base_component import BaseComponent
-from equipment_types import EquipmentType
+from dice import dice_roller
+from equipment_types import EquipmentCategory, EquipmentType
 
 if TYPE_CHECKING:
     from entity import Actor, Item
@@ -44,25 +45,65 @@ class Equipment(BaseComponent):
         return slots
 
     @property
-    def defense_bonus(self) -> int:
+    def ac_bonus(self) -> int:
         bonus = 0
 
         for i in self.slots:  # Iterate through the list of slots and add each bonus
             slot, item = i
             if item is not None and item.equippable is not None:
-                bonus += item.equippable.defense_bonus
+                bonus += item.equippable.ac_bonus
+        
+        try:
+            if self.chest.equippable.equipment_category == EquipmentCategory.UNARMORED:
+                prof_bonus = self.parent.fighter.proficiencies.prof_unarmored
+            elif self.chest.equippable.equipment_category == EquipmentCategory.LIGHT:
+                prof_bonus = self.parent.fighter.proficiencies.prof_light
+            elif self.chest.equippable.equipment_category == EquipmentCategory.MEDIUM:
+                prof_bonus = self.parent.fighter.proficiencies.prof_med
+            elif self.chest.equippable.equipment_category == EquipmentCategory.HEAVY:
+                prof_bonus = self.parent.fighter.proficiencies.prof_heavy
+        except AttributeError:
+            prof_bonus = self.parent.fighter.proficiences.prof_unarmored
 
-        return bonus
+        return bonus + prof_bonus
+    
+    @property
+    def damage(self) -> int:
+        try: 
+            bonus = self.parent.fighter.player_class.class_damage_bonus
+        except AttributeError:
+            bonus = 0
+        return self.weapon.equippable.num_dice, self.weapon.equippable.die_size, self.weapon.equippable.damage_bonus + bonus
+    
+    @property
+    def weapon_prof_bonus(self) -> int:
+        
+        bonus = 0
+        for i in self.slots:  # Iterate through the list of slots and add each bonus
+            slot, item = i
+            if item is not None and item.equippable is not None:
+                bonus += item.equippable.hit_bonus
+        
+        try:
+            if self.weapon.equippable.equipment_category == EquipmentCategory.SIMPLE:
+                prof_bonus = self.parent.fighter.proficiencies.prof_simple
+            elif self.weapon.equippable.equipment_category == EquipmentCategory.MARTIAL:
+                prof_bonus = self.parent.fighter.proficiencies.prof_martial
+            elif self.weapon.equippable.equipment_category == EquipmentCategory.ADVANCED:
+                prof_bonus = self.parent.fighter.proficiencies.prof_advanced
+        except AttributeError:
+            prof_bonus = self.parent.fighter.proficiencies.prof_unarmed
+        
+        return prof_bonus + bonus
 
     @property
-    def power_bonus(self) -> int:
+    def extra_attacks(self) -> int:
         bonus = 0
-
         for i in self.slots:  # Iterate through the list of slots and add each bonus
             slot, item = i
             if item is not None and item.equippable is not None:
-                bonus += item.equippable.power_bonus
-
+                bonus += item.equippable.extra_attacks
+        
         return bonus
 
     def item_is_equipped(self, item: Item) -> bool:

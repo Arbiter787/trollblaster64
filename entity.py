@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
+from components.fighter import BaseStats
 
 from render_order import RenderOrder
 
@@ -96,7 +97,7 @@ class Actor (Entity):
         name: str = "<Unnamed>",
         ai_cls: Type[BaseAI],
         equipment: Equipment,
-        fighter: Fighter,
+        fighter: BaseStats,
         inventory: Inventory,
         level: Level,
     ):
@@ -114,7 +115,7 @@ class Actor (Entity):
 
         self.equipment: Equipment = equipment
         self.equipment.parent = self
-
+        
         self.fighter = fighter
         self.fighter.parent = self
 
