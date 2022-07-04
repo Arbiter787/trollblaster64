@@ -8,11 +8,7 @@ import components.ai
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
-from input_handlers import (
-    ActionOrHandler,
-    AreaRangedAttackHandler,
-    SingleRangedAttackHandler,
-)
+import input_handlers
 
 if TYPE_CHECKING:
     from entity import Actor, Item
@@ -44,11 +40,11 @@ class ConfusionConsumable(Consumable):
     def __init__(self, number_of_turns: int):
         self.number_of_turns = number_of_turns
 
-    def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
+    def get_action(self, consumer: Actor) -> input_handlers.SingleRangedAttackHandler:
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
-        return SingleRangedAttackHandler(
+        return input_handlers.SingleRangedAttackHandler(
             self.engine,
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
@@ -97,11 +93,11 @@ class FireballDamageConsumable(Consumable):
         self.damage = damage
         self.radius = radius
 
-    def get_action(self, consumer: Actor) -> AreaRangedAttackHandler:
+    def get_action(self, consumer: Actor) -> input_handlers.AreaRangedAttackHandler:
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
-        return AreaRangedAttackHandler(
+        return input_handlers.AreaRangedAttackHandler(
             self.engine,
             radius=self.radius,
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),

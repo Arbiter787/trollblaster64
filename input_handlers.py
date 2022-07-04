@@ -5,6 +5,7 @@ import os
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
 import tcod.event
+import traceback
 
 import actions
 from actions import (
@@ -15,6 +16,7 @@ from actions import (
 )
 import color
 import exceptions
+import setup_game
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -120,8 +122,10 @@ class EventHandler(BaseEventHandler):
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle events for input handlers with an engine."""
         action_or_state = self.dispatch(event)
+        
         if isinstance(action_or_state, BaseEventHandler):
             return action_or_state
+        
         if self.handle_action(action_or_state):
             # A valid action was performed.
             if not self.engine.player.is_alive:
@@ -620,6 +624,8 @@ class GameOverEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
         if event.sym == tcod.event.K_ESCAPE:
             self.on_quit()
+        elif event.sym == tcod.event.K_n:
+            return MainMenu()
 
 
 class HistoryViewer(EventHandler):
@@ -671,4 +677,60 @@ class HistoryViewer(EventHandler):
             self.cursor = self.log_length - 1  # Move directly to the last message.
         else:  # Any other key moves back to the main game state.
             return MainGameEventHandler(self.engine)
+        return None
+
+class MainMenu(BaseEventHandler):
+    """Handle the main menu rendering and input."""
+
+    def on_render(self, console: tcod.console) -> None:
+        """Render the main menu on a background image."""
+        console.draw_semigraphics(setup_game.background_image, 0, 0)
+
+        console.print(
+            console.width // 2,
+            console. height // 2 - 4,
+            "TrollBlaster 64",
+            fg=color.menu_title,
+            bg=color.black,
+            alignment=tcod.CENTER,
+            bg_blend=tcod.BKGND_ALPHA(64),
+        )
+        console.print(
+            console.width // 2,
+            console.height - 2,
+            "By Wmss",
+            fg=color.menu_title,
+            alignment=tcod.CENTER,
+        )
+
+        menu_width = 24
+        for i, text in enumerate(
+            ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"]
+        ):
+            console.print(
+                console.width // 2,
+                console.height // 2 - 2 + i,
+                text.ljust(menu_width),
+                fg=color.menu_text,
+                bg=color.black,
+                alignment=tcod.CENTER,
+                bg_blend=tcod.BKGND_ALPHA(64),
+            )
+
+    def ev_keydown(
+        self, event: tcod.event.KeyDown
+    ) -> Optional[BaseEventHandler]:
+        if event.sym in (tcod.event.K_q, tcod.event.K_ESCAPE):
+            raise SystemExit()
+        elif event.sym == tcod.event.K_c:
+            try:
+                return MainGameEventHandler(setup_game.load_game("savegame.sav"))
+            except FileNotFoundError:
+                return PopupMessage(self, "No saved game to load.")
+            except Exception as exc:
+                traceback.print_exc()  # Print to stderr.
+                return PopupMessage(self, f"Failed to load save:\n{exc}")
+        elif event.sym == tcod.event.K_n:
+            return MainGameEventHandler(setup_game.new_game())
+
         return None
