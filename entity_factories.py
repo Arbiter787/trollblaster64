@@ -142,7 +142,7 @@ health_kit = Item(
     char="+",
     color=(127, 0, 255),
     name="Health Kit",
-    consumable=consumable.HealingConsumable(amount=10),
+    consumable=consumable.HealingConsumable(amount=20),
 )
 lightning_scroll = Item(
     char="~",
