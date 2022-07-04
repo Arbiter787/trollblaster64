@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 class Viewport:
+    
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
         self.game_map = engine.game_map
@@ -56,6 +57,9 @@ class Viewport:
         If it isn't, but it's in the "explored" array, draw it with the "dark" colors.
         Otherwise, the default is "SHROUD".
         """
+        self.width = console.width
+        self.height = console.height - 5
+
         y_min, y_max, self.y_offset = self.get_map_limits(self.game_map.height, console.height-5, self.engine.player.y)
         x_min, x_max, self.x_offset = self.get_map_limits(self.game_map.width, console.width, self.engine.player.x)
 

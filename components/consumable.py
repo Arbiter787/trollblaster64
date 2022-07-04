@@ -53,7 +53,9 @@ class ConfusionConsumable(Consumable):
         consumer = action.entity
         target = action.target_actor
 
-        if not self.engine.game_map.visible[action.target_xy]:
+        if not self.engine.game_map.in_bounds(*action.target_xy):
+            raise Impossible("You cannot target an area that you cannot see.")
+        elif not self.engine.game_map.visible[action.target_xy]:
             raise Impossible("You cannot target an area that you cannot see.")
         if not target:
             raise Impossible("You must select a target.")
@@ -106,6 +108,8 @@ class FireballDamageConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         target_xy = action.target_xy
 
+        if not self.engine.game_map.in_bounds(*action.target_xy):
+            raise Impossible("You cannot target an area that you cannot see.")
         if not self.engine.game_map.visible[target_xy]:
             raise Impossible("You cannot target an area you cannot see.")
 

@@ -219,14 +219,14 @@ class CharacterScreenEventHandler(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
         y = 0
 
         width = len(self.TITLE) + 4
+
+        if self.engine.player.x <= 30:
+            x = console.width - width
+        else:
+            x = 0
 
         console.draw_frame(
             x=x,
@@ -286,7 +286,7 @@ class LevelUpEventHandler(AskUserEventHandler):
         next_choice = self.engine.player.fighter.player_class.choice_reason[0]
 
         if self.engine.player.x <= 30:
-            x = 40
+            x = console.width - 35
         else:
             x = 0
 
@@ -379,14 +379,14 @@ class InventoryEventHandler(AskUserEventHandler):
         if height <= 3:
             height = 3
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
         y = 0
 
         width = len(self.TITLE) + 4
+
+        if self.engine.player.x <= 30:
+            x = console.width - width
+        else:
+            x = 0
 
         console.draw_frame(
             x=x,
@@ -509,13 +509,14 @@ class SelectIndexHandler(AskUserEventHandler):
             dx, dy = MOVE_KEYS[key]
             x += dx * modifier
             y += dy * modifier
-            # Clamp the cursor index to the map size.
-            x = max(0, min(x, self.engine.game_map.width - 1))
-            y = max(0, min(y, self.engine.game_map.height - 1))
+            # Clamp the cursor index to the viewport size.
+            x = max(0 - self.engine.viewport.x_offset, min(x, self.engine.viewport.width - self.engine.viewport.x_offset - 1))
+            y = max(0 - self.engine.viewport.y_offset, min(y, self.engine.viewport.height - self.engine.viewport.y_offset - 1))
             self.engine.mouse_location = x, y
             return None
         elif key in CONFIRM_KEYS:
             return self.on_index_selected(*self.engine.mouse_location)
+
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(
