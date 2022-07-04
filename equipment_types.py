@@ -11,34 +11,34 @@ class EquipmentType(Enum):
     FEET = auto()
 
 class EquipmentCategory(Enum):
-    SIMPLE = auto()
-    MARTIAL = auto()
-    ADVANCED = auto()
-    UNARMORED = auto()
-    LIGHT = auto()
-    MEDIUM = auto()
-    HEAVY = auto()
+    SIMPLE = "Simple"
+    MARTIAL = "Martial"
+    ADVANCED = "Advanced"
+    UNARMORED = "Unarmored"
+    LIGHT = "Light"
+    MEDIUM = "Medium"
+    HEAVY = "Heavy"
 
 class EquipmentTraits(Enum):
-    AGILE = auto()
-    BACKSWING = auto()
-    DEADLY = auto()
-    DISARM = auto()
-    FATAL = auto()
-    FINESSE = auto()
-    FORCEFUL = auto()
-    GRAPPLE = auto()
-    PARRY = auto()
-    REACH = auto()
-    SHOVE = auto()
-    SWEEP = auto()
-    THROWN = auto()
-    TRIP = auto()
-    TWO_HAND = auto()
-    VERSATILE_B = auto()
-    VERSATILE_P = auto()
-    VERSATILE_S = auto()
-    VOLLEY = auto()
+    AGILE = "Agile"
+    BACKSWING = "Backswing"
+    DEADLY = "Deadly"
+    DISARM = "Disarm"
+    FATAL = "Fatal"
+    FINESSE = "Finesse"
+    FORCEFUL = "Forceful"
+    GRAPPLE = "Grapple"
+    PARRY = "Parry"
+    REACH = "Reach"
+    SHOVE = "Shove"
+    SWEEP = "Sweep"
+    THROWN = "Thrown"
+    TRIP = "Trip"
+    TWO_HAND = "Two Hand"
+    VERSATILE_B = "Versatile B"
+    VERSATILE_P = "Versatile P"
+    VERSATILE_S = "Versatile S"
+    VOLLEY = "Volley"
 
 
 

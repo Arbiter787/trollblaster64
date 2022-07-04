@@ -142,6 +142,7 @@ class Item(Entity):
         name: str = "<Unnamed>",
         consumable: Optional[Consumable] = None,
         equippable: Optional[Equippable] = None,
+        desc_string: Optional[str] = None,
     ):
         super().__init__(
             x=x,
@@ -152,6 +153,8 @@ class Item(Entity):
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
+
+        self.desc_string = desc_string
 
         self.consumable = consumable
         if self.consumable:

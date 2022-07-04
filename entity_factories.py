@@ -132,30 +132,35 @@ confusion_scroll = Item(
     color=color.purple,
     name="Confusion Scroll",
     consumable=consumable.ConfusionConsumable(number_of_turns=5),
+    desc_string="Confuses an enemy for 5 turns"
 )
 fireball_scroll = Item(
     char="~",
     color=color.red,
     name="Fireball Scroll",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
+    desc_string="Deals 12 damage in a radius"
 )
 health_kit = Item(
     char="+",
     color=color.purple,
     name="Health Kit",
     consumable=consumable.HealingConsumable(amount=20),
+    desc_string="Heals for 20 HP"
 )
 lightning_scroll = Item(
     char="~",
     color=color.yellow,
     name="Lightning Scroll",
     consumable=consumable.LightningDamageConsumable(damage=10, maximum_range=5),
+    desc_string="Deals 10 damage to nearby enemy"
 )
 teleport_scroll = Item(
     char="~",
     color=color.grey,
     name="Teleportation Scroll",
     consumable=consumable.TeleportConsumable(maximum_range=50),
+    desc_string="Teleports you randomly"
 )
 
 # WEAPONS

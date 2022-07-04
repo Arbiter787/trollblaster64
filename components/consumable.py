@@ -161,20 +161,18 @@ class TeleportConsumable(Consumable):
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
-        target = None
-        closest_distance = self.maximum_range
 
-        already_chosen: list[tuple(int, int)] = [(consumer.x, consumer.y)]
+        already_chosen = [(consumer.x, consumer.y)]
 
         valid_tile = None
 
-        for x in range(closest_distance ** 2):
+        for x in range(self.maximum_range ** 2):
             potential_x = 0
             potential_y = 0 
             
             while True:
-                potential_x = random.randint(consumer.x - closest_distance, consumer.x + closest_distance)
-                potential_y = random.randint(consumer.y - closest_distance, consumer.y + closest_distance)
+                potential_x = random.randint(consumer.x - self.maximum_range, consumer.x + self.maximum_range)
+                potential_y = random.randint(consumer.y - self.maximum_range, consumer.y + self.maximum_range)
 
                 potential_tile = (potential_x, potential_y)
 
@@ -210,6 +208,5 @@ class TeleportConsumable(Consumable):
                 "With a loud *pop*, you teleport away."
             )
             
-            consumer.x = valid_tile[0]
-            consumer.y = valid_tile[1]
+            consumer.place(potential_x, potential_y)
             self.consume()

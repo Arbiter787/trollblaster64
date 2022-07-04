@@ -19,6 +19,7 @@ from actions import (
 import color
 import exceptions
 import setup_game
+from equipment_types import EquipmentType
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -365,6 +366,12 @@ class InventoryEventHandler(AskUserEventHandler):
     def __init__(self, engine: Engine):
         super().__init__(engine)
         self.number_of_items_in_inventory = len(self.engine.player.inventory.items)
+        
+        self.max_name = 0
+        for item in self.engine.player.inventory.items:
+            if self.max_name < len(item.name):
+                self.max_name = len(item.name)
+        
         self.cursor = 0
 
     def on_render(self, console: tcod.Console) -> None:
@@ -381,12 +388,14 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 4
+        width = max(self.max_name + 4, len(self.TITLE) + 4)
 
         if self.engine.player.x <= 30:
             x = console.width - width
+            info_side = "left"
         else:
             x = 0
+            info_side = "right"
 
         console.draw_frame(
             x=x,
@@ -412,6 +421,81 @@ class InventoryEventHandler(AskUserEventHandler):
 
                 if self.cursor == i:
                     console.print(x + 1, y + i + 1, item_string, fg=(0, 0, 0), bg=(255, 255, 255))
+                    
+                    # determine height of info window based on item
+                    if item.equippable is not None:
+                        if item.equippable.equipment_type == EquipmentType.WEAPON:
+                            if item.equippable.equipment_traits is not None:
+                                info_height = 6 + len(item.equippable.equipment_traits)
+                            else:
+                                info_height = 5
+                        else:
+                            info_height = 3
+                    else:
+                        info_height = 3
+
+                    if item.desc_string is not None:
+                        info_width = max(len(item.name), len(item.desc_string) + 2)
+                    else:
+                        info_width = max(len(item.name), 21)
+
+                    # draw an information window for item stats
+                    if info_side == "right":
+                        console.draw_frame(
+                            x=x+width,
+                            y=y,
+                            width=info_width,
+                            height=info_height,
+                            title=item.name,
+                            clear=True,
+                            fg=(255, 255, 255),
+                            bg=(0, 0, 0),
+                        )
+
+                        if item.equippable is not None:
+                            if item.equippable.equipment_type == EquipmentType.WEAPON:
+                                console.print(x + width + 1, y + 1, f"Weapon Type: {item.equippable.equipment_category.value}")
+                                console.print(x + width + 1, y + 2, f"Damage: {item.equippable.num_dice}d{item.equippable.die_size} + {self.engine.player.fighter.damage[3]}")
+                                console.print(x + width + 1, y + 3, f"To Hit Bonus: {item.equippable.hit_bonus}")
+                                if item.equippable.equipment_traits is not None:
+                                    console.print(x + width + 1, y + 4, f"Traits:")
+                                    trait_num = 1
+                                    for trait in item.equippable.equipment_traits:
+                                        console.print(x + width + 2, y + trait_num + 4, trait.value)
+                                        trait_num += 1
+                            elif item.equippable.equipment_type in [EquipmentType.CHEST, EquipmentType.SHIELD]:
+                                console.print(x + width + 1, y + 1, f"AC Bonus: +{item.equippable.ac_bonus}")
+                        else:
+                            console.print(x + width + 1, y + 1, item.desc_string)
+                    
+                    elif info_side == "left":
+                        console.draw_frame(
+                            x=x-info_width,
+                            y=y,
+                            width=info_width,
+                            height=info_height,
+                            title=item.name,
+                            clear=True,
+                            fg=(255, 255, 255),
+                            bg=(0, 0, 0),
+                        )
+
+                        if item.equippable is not None:
+                            if item.equippable.equipment_type == EquipmentType.WEAPON:
+                                console.print(x - info_width + 1, y + 1, f"Weapon Type: {item.equippable.equipment_category.value}")
+                                console.print(x - info_width + 1, y + 2, f"Damage: {item.equippable.num_dice}d{item.equippable.die_size} + {self.engine.player.fighter.damage[3]}")
+                                console.print(x - info_width + 1, y + 3, f"To Hit Bonus: {item.equippable.hit_bonus}")
+                                if item.equippable.equipment_traits is not None:
+                                    console.print(x - info_width + 1, y + 4, f"Traits:")
+                                    trait_num = 1
+                                    for trait in item.equippable.equipment_traits:
+                                        console.print(x - info_width + 2, y + trait_num + 4, trait.value)
+                                        trait_num += 1
+                            elif item.equippable.equipment_type in [EquipmentType.CHEST, EquipmentType.SHIELD]:
+                                console.print(x - info_width + 1, y + 1, f"AC Bonus: +{item.equippable.ac_bonus}")
+                        else:
+                            console.print(x - info_width + 1, y + 1, item.desc_string)
+                
                 else:
                     console.print(x + 1, y + i + 1, item_string)
         else:
