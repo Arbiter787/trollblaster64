@@ -479,7 +479,7 @@ class InventoryEventHandler(AskUserEventHandler):
                     if item.desc_string is not None:
                         info_width = max(len(item.name), len(item.desc_string) + 2, 21)
                     else:
-                        info_width = max(len(item.name), 21)
+                        info_width = max(len(item.name) + 4, 21)
 
                     # draw an information window for item stats
                     if info_side == "right":

@@ -174,6 +174,7 @@ dagger = Item(
         equipment_traits=[EquipmentTraits.AGILE, EquipmentTraits.FINESSE, EquipmentTraits.THROWN, EquipmentTraits.VERSATILE_P],
         num_dice=1,
         die_size=4,
+        base_name="Dagger",
     )
 )
 shortsword = Item(
@@ -186,6 +187,7 @@ shortsword = Item(
         equipment_traits=[EquipmentTraits.AGILE, EquipmentTraits.FINESSE, EquipmentTraits.VERSATILE_S],
         num_dice=1,
         die_size=6,
+        base_name="Shortsword",
     )
 )
 longsword = Item(
@@ -198,6 +200,7 @@ longsword = Item(
         equipment_traits=[EquipmentTraits.VERSATILE_P],
         num_dice=1,
         die_size=8,
+        base_name="Longsword",
     )
 )
 rapier = Item(
@@ -211,6 +214,7 @@ rapier = Item(
         num_dice=1,
         die_size=6,
         crit_bonus=[1, 8],
+        base_name="Rapier",
     )
 )
 axe = Item(
@@ -223,6 +227,7 @@ axe = Item(
         equipment_traits=[EquipmentTraits.SWEEP],
         num_dice=1,
         die_size=8,
+        base_name="Battle axe",
     )
 )
 club = Item(
@@ -235,6 +240,7 @@ club = Item(
         equipment_traits=[EquipmentTraits.THROWN],
         num_dice=1,
         die_size=6,
+        base_name="Club",
     )
 )
 light_hammer = Item(
@@ -247,6 +253,7 @@ light_hammer = Item(
         equipment_traits=[EquipmentTraits.AGILE, EquipmentTraits.THROWN],
         num_dice=1,
         die_size=6,
+        base_name="Light hammer",
     )
 )
 
@@ -258,6 +265,7 @@ wood_shield = Item(
     equippable=Equippable(
         equipment_type=EquipmentType.SHIELD,
         ac_bonus=1,
+        base_name="Wooden Shield",
     )
 )
 iron_shield = Item(
@@ -267,6 +275,7 @@ iron_shield = Item(
     equippable=Equippable(
         equipment_type=EquipmentType.SHIELD,
         ac_bonus=2,
+        base_name="Iron Shield",
     )
 )
 
@@ -279,6 +288,7 @@ leather_armor = Item(
         equipment_type=EquipmentType.CHEST,
         equipment_category=EquipmentCategory.LIGHT,
         ac_bonus=1,
+        base_name="Leather Armor",
     )
 )
 chain_mail = Item(
@@ -289,6 +299,7 @@ chain_mail = Item(
         equipment_type=EquipmentType.CHEST,
         equipment_category=EquipmentCategory.MEDIUM,
         ac_bonus=4,
+        base_name="Chain Mail",
     )
 )
 

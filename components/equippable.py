@@ -26,6 +26,7 @@ class Equippable(BaseComponent):
         extra_attacks: int = 0,
         crit_bonus: Optional[tuple[int, int]] = None,  # die amount, die size
         reach: int = 0,
+        base_name: str = "No Name",
     ):
         self.equipment_type = equipment_type
         self.equipment_category = equipment_category
@@ -43,6 +44,8 @@ class Equippable(BaseComponent):
 
         self.enchantment_level = 0
 
+        self.base_name = base_name
+
         if equipment_traits is not None:
             for i in equipment_traits:
                 if i == EquipmentTraits.AGILE:
@@ -58,13 +61,13 @@ class Equippable(BaseComponent):
             self.hit_bonus += 1
             self.enchantment_level += 1
             if self.enchantment_level == 1:
-                self.parent.rename(f"+1 striking {self.parent.name}")
+                self.parent.rename(f"+1 striking {self.base_name}")
             elif self.enchantment_level == 2:
-                self.parent.rename(f"+2 greater striking {self.parent.name}")
+                self.parent.rename(f"+2 greater striking {self.base_name}")
         elif self.equipment_type in [EquipmentType.CHEST, EquipmentType.SHIELD]:
             self.ac_bonus += 1
             self.enchantment_level += 1
             if self.enchantment_level == 1:
-                self.parent.rename(f"+1 {self.parent.name}")
+                self.parent.rename(f"+1 {self.base_name}")
             elif self.enchantment_level == 2:
-                self.parent.rename(f"+2 {self.parent.name}")
+                self.parent.rename(f"+2 {self.base_name}")

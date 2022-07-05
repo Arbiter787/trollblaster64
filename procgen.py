@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import copy
 
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 
@@ -128,9 +129,9 @@ def get_entities_at_random(
     entities = list(entity_weighted_chances.keys())
     entity_weighted_chance_values = list(entity_weighted_chances.values())
 
-    chosen_entities = random.choices(
+    chosen_entities = copy.deepcopy(random.choices(
         entities, weights=entity_weighted_chance_values, k=number_of_entities
-    )
+    ))
 
     return chosen_entities
 
@@ -151,11 +152,12 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
     )
 
     for item in items:
-        if (floor_number >= 3) and (item.equippable is not None):
-            if random.randint(0, 1) == 1:
-                item.equippable.enchant()
-                if floor_number >= 6 and random.randint(0, 1) == 1:
+        if floor_number >= 3:
+            if item.equippable is not None:
+                if random.randint(0, 1) == 1:
                     item.equippable.enchant()
+                    if floor_number >= 6 and random.randint(0, 1) == 1:
+                        item.equippable.enchant()
 
     for entity in monsters + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)
@@ -185,11 +187,12 @@ def place_hallway_entities(rooms: list[RectangularRoom], dungeon: GameMap, floor
     )
 
     for item in items:
-        if (floor_number >= 3) and (item.equippable is not None):
-            if random.randint(0, 1) == 1:
-                item.equippable.enchant()
-                if floor_number >= 6 and random.randint(0, 1) == 1:
+        if floor_number >= 3:
+            if item.equippable is not None:
+                if random.randint(0, 1) == 1:
                     item.equippable.enchant()
+                    if floor_number >= 6 and random.randint(0, 1) == 1:
+                        item.equippable.enchant()
 
     for entity in monsters + items:
         while True:
