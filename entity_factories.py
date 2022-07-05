@@ -138,8 +138,8 @@ fireball_scroll = Item(
     char="~",
     color=color.red,
     name="Fireball Scroll",
-    consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
-    desc_string="Deals 12 damage in a radius"
+    consumable=consumable.RadiusDamageConsumable(num_dice=6, die_size=6, radius=3),
+    desc_string="Deals 6d6 damage in a radius"
 )
 health_kit = Item(
     char="+",
@@ -152,8 +152,8 @@ lightning_scroll = Item(
     char="~",
     color=color.yellow,
     name="Lightning Scroll",
-    consumable=consumable.LightningDamageConsumable(damage=10, maximum_range=5),
-    desc_string="Deals 10 damage to nearby enemy"
+    consumable=consumable.SingleTargetDamageConsumable(num_dice=4, die_size=12, maximum_range=5),
+    desc_string="Deals 4d12 damage to nearby enemy"
 )
 teleport_scroll = Item(
     char="~",

@@ -409,11 +409,6 @@ class InventoryEventHandler(AskUserEventHandler):
         super().__init__(engine)
         self.number_of_items_in_inventory = len(self.engine.player.inventory.items)
         
-        self.max_name = 0
-        for item in self.engine.player.inventory.items:
-            if self.max_name < len(item.name):
-                self.max_name = len(item.name)
-        
         self.cursor = 0
 
     def on_render(self, console: tcod.Console) -> None:
@@ -423,6 +418,11 @@ class InventoryEventHandler(AskUserEventHandler):
         """
         super().on_render(console)
 
+        max_name = 0
+        for item in self.engine.player.inventory.items:
+            if max_name < len(item.name):
+                max_name = len(item.name)
+        
         height = self.number_of_items_in_inventory + 2
 
         if height <= 3:
@@ -430,7 +430,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = max(self.max_name + 4, len(self.TITLE) + 4)
+        width = max(max_name + 4, len(self.TITLE) + 4)
 
         if self.engine.player.x <= 30:
             x = console.width - width

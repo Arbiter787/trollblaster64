@@ -41,6 +41,8 @@ class Equippable(BaseComponent):
 
         self.reach = reach
 
+        self.enchantment_level = 0
+
         if equipment_traits is not None:
             for i in equipment_traits:
                 if i == EquipmentTraits.AGILE:
@@ -49,3 +51,20 @@ class Equippable(BaseComponent):
                     self.ac_bonus += 1
                 elif i == EquipmentTraits.REACH:
                     self.reach = 5
+    
+    def enchant(self) -> None:
+        if self.equipment_type == EquipmentType.WEAPON:
+            self.num_dice += 1
+            self.hit_bonus += 1
+            self.enchantment_level += 1
+            if self.enchantment_level == 1:
+                self.parent.rename(f"+1 striking {self.parent.name}")
+            elif self.enchantment_level == 2:
+                self.parent.rename(f"+2 greater striking {self.parent.name}")
+        elif self.equipment_type in [EquipmentType.CHEST, EquipmentType.SHIELD]:
+            self.ac_bonus += 1
+            self.enchantment_level += 1
+            if self.enchantment_level == 1:
+                self.parent.rename(f"+1 {self.parent.name}")
+            elif self.enchantment_level == 2:
+                self.parent.rename(f"+2 {self.parent.name}")

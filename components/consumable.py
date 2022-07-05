@@ -10,6 +10,7 @@ from components.base_component import BaseComponent
 from exceptions import Impossible
 import input_handlers
 import random
+from dice import dice_roller
 
 if TYPE_CHECKING:
     from entity import Actor, Item
@@ -91,9 +92,9 @@ class HealingConsumable(Consumable):
             raise Impossible(f"Your health is already full.")
 
 
-class FireballDamageConsumable(Consumable):
-    def __init__(self, damage: int, radius: int):
-        self.damage = damage
+class RadiusDamageConsumable(Consumable):
+    def __init__(self, num_dice: int, die_size: int, radius: int):
+        self.damage = dice_roller(num_dice, die_size)
         self.radius = radius
 
     def get_action(self, consumer: Actor) -> input_handlers.AreaRangedAttackHandler:
@@ -128,9 +129,9 @@ class FireballDamageConsumable(Consumable):
         self.consume()
 
 
-class LightningDamageConsumable(Consumable):
-    def __init__(self, damage: int, maximum_range: int):
-        self.damage = damage
+class SingleTargetDamageConsumable(Consumable):
+    def __init__(self, num_dice, die_size, maximum_range: int):
+        self.damage = dice_roller(num_dice, die_size)
         self.maximum_range = maximum_range
 
     def activate(self, action: actions.ItemAction) -> None:

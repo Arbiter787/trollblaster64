@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 # (floor, objects per room)
 max_items_by_floor = [
     (1, 1),
-    (4, 2),
-    (8, 3),
+    (3, 2),
+    (6, 3),
 ]
 
 max_monsters_by_floor = [
@@ -151,16 +151,11 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
     )
 
     for item in items:
-        if floor_number >= 3:
-            if item.equippable is not None:
-                if item.equippable.equipment_type == EquipmentType.WEAPON and random.randint(0, 1) == 1:
-                    item.equippable.die_size += 1
-                    item.equippable.hit_bonus += 1
-                    item.name = f"+1 striking {item.name}"
-                    if floor_number >= 6 and random.randint(0, 1) == 1:
-                        item.equippable.die_size += 1
-                        item.equippable.hit_bonus += 1
-                        item.name = f"+2 greater striking {item.name}"
+        if (floor_number >= 3) and (item.equippable is not None):
+            if random.randint(0, 1) == 1:
+                item.equippable.enchant()
+                if floor_number >= 6 and random.randint(0, 1) == 1:
+                    item.equippable.enchant()
 
     for entity in monsters + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)
@@ -180,7 +175,7 @@ def place_hallway_entities(rooms: list[RectangularRoom], dungeon: GameMap, floor
     )
 
     number_of_monsters *= 2
-    number_of_items *= 2
+    number_of_items *= 4
 
     monsters: List[Entity] = get_entities_at_random(
         enemy_chances, number_of_monsters, floor_number
@@ -190,16 +185,11 @@ def place_hallway_entities(rooms: list[RectangularRoom], dungeon: GameMap, floor
     )
 
     for item in items:
-        if floor_number >= 3:
-            if item.equippable is not None:
-                if item.equippable.equipment_type == EquipmentType.WEAPON and random.randint(0, 1) == 1:
-                    item.equippable.die_size += 1
-                    item.equippable.hit_bonus += 1
-                    item.name = f"+1 striking {item.name}"
-                    if floor_number >= 6 and random.randint(0, 1) == 1:
-                        item.equippable.die_size += 1
-                        item.equippable.hit_bonus += 1
-                        item.name = f"+2 greater striking {item.name}"
+        if (floor_number >= 3) and (item.equippable is not None):
+            if random.randint(0, 1) == 1:
+                item.equippable.enchant()
+                if floor_number >= 6 and random.randint(0, 1) == 1:
+                    item.equippable.enchant()
 
     for entity in monsters + items:
         while True:

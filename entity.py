@@ -84,6 +84,9 @@ class Entity:
         # Move the entity by a given amount
         self.x += dx
         self.y += dy
+    
+    def rename(self, new_name: str) -> None:
+        self.name = new_name
 
 
 class Actor (Entity):
