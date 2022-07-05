@@ -5,6 +5,7 @@ import os
 
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
+import tcod
 import tcod.event
 import traceback
 
@@ -116,6 +117,20 @@ class PopupMessage(BaseEventHandler):
     def ev_keydown(self, event: "tcod.event.KeyDown") -> Optional[BaseEventHandler]:
         """Any key returns to the parent event handler."""
         return self.parent
+
+
+class QuitConfirm(PopupMessage):
+    """Display a popup text window. If the user presses escape, quit. Otherwise go back to previous handler"""
+    
+    def ev_keydown(self, event: "tcod.event.KeyDown") -> Optional[BaseEventHandler]:
+        key = event.sym
+
+        self.quit = False
+
+        if key == tcod.event.K_ESCAPE:
+            raise SystemExit()
+        else:
+            return self.parent
 
 
 class EventHandler(BaseEventHandler):
@@ -435,7 +450,7 @@ class InventoryEventHandler(AskUserEventHandler):
                         info_height = 3
 
                     if item.desc_string is not None:
-                        info_width = max(len(item.name), len(item.desc_string) + 2)
+                        info_width = max(len(item.name), len(item.desc_string) + 2, 21)
                     else:
                         info_width = max(len(item.name), 21)
 
@@ -737,6 +752,27 @@ class GameOverEventHandler(EventHandler):
             self.on_quit()
         elif event.sym == tcod.event.K_n:
             return MainMenu()
+    
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+        
+        x = console.width // 2 - 10
+        y = console.height // 2 - 3
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=21,
+            height=7,
+            title="Game Over",
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        console.print(x + 10, y + 2, "You died!", fg=(255, 0, 0), alignment=tcod.CENTER)
+        console.print(x + 10, y + 4, "n -  Main Menu", alignment=tcod.CENTER)
+        console.print(x + 10, y + 5, "esc - Quit", alignment=tcod.CENTER)
 
 
 class HistoryViewer(EventHandler):

@@ -37,31 +37,61 @@ def main() -> None:
         vsync=True,
         sdl_window_flags=flags
     ) as context:
-        try:
-            while True:
-                root_console = context.new_console(magnification=1, order="F")
-                handler.on_render(console=root_console)
-                context.present(root_console, integer_scaling=True)
+        while True:
+            try:
+                while True:
+                    root_console = context.new_console(magnification=1, order="F")
+                    handler.on_render(console=root_console)
+                    context.present(root_console, integer_scaling=True)
 
-                try:
-                    for event in tcod.event.get():
-                        context.convert_event(event)
-                        handler = handler.handle_events(event)
-                except Exception:  # Handle exceptions in game.
-                    traceback.print_exc()  # Print error to stderr.
-                    # Then print the error to the message log.
-                    if isinstance(handler, input_handlers.EventHandler):
-                        handler.engine.message_log.add_message(
-                            traceback.format_exc(), color.error
-                        )
-        except exceptions.QuitWithoutSaving:
-            raise
-        except SystemExit:  # Save and quit.
-            save_game(handler, "savegame.sav")
-            raise
-        except BaseException:  # Save on any other unexpected exception.
-            save_game(handler, "savegame.sav")
-            raise
+                    try:
+                        for event in tcod.event.get():
+                            context.convert_event(event)
+                            handler = handler.handle_events(event)
+                    except Exception:  # Handle exceptions in game.
+                        traceback.print_exc()  # Print error to stderr.
+                        # Then print the error to the message log.
+                        if isinstance(handler, input_handlers.EventHandler):
+                            handler.engine.message_log.add_message(
+                                traceback.format_exc(), color.error
+                            )
+            except exceptions.QuitWithoutSaving:
+                raise
+            
+            except SystemExit:  # Ask user for confirmation, then save and quit.
+                
+                # store the old input handler so it can be saved if necessary
+                old_handler = handler
+
+                # switch handler to the quit confirmation handler
+                handler = input_handlers.QuitConfirm(handler, "Are you sure you want to quit?\nPress Esc to quit, any other key to cancel")
+                
+                # get user input and render until quit is confirmed/canceled (basically mini main loop)
+                done = False
+                while not done:
+                    root_console = context.new_console(magnification=1, order="F")
+                    handler.on_render(console=root_console)
+                    context.present(root_console, integer_scaling=True)
+
+                    for event in tcod.event.wait():
+                        # only care about key events
+                        if isinstance(event, tcod.event.KeyDown):
+                            try:
+                                # if key event doesn't quit the game, return to hold handler
+                                context.convert_event(event)
+                                handler = handler.handle_events(event)
+                                done = True
+                            except SystemExit:
+                                # if key event raises SystemExit again, quit for real
+                                save_game(old_handler, "savegame.sav")
+                                raise 
+                continue
+
+            except BaseException:  # Save on any other unexpected exception.
+                save_game(handler, "savegame.sav")
+                raise
+            
+            break
 
 
 if __name__ == "__main__":
