@@ -170,6 +170,55 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
             entity.spawn(dungeon, x, y)
 
 
+def place_hallway_entities(rooms: list[RectangularRoom], dungeon: GameMap, floor_number: int,) -> None:
+    """Like normal place entities, except it only places in hallways."""
+    number_of_monsters = random.randint(
+        1, get_max_value_for_floor(max_monsters_by_floor, floor_number) * 2
+    )
+    number_of_items = random.randint(
+        1, get_max_value_for_floor(max_items_by_floor, floor_number) * 2
+    )
+
+    number_of_monsters *= 2
+    number_of_items *= 2
+
+    monsters: List[Entity] = get_entities_at_random(
+        enemy_chances, number_of_monsters, floor_number
+    )
+    items: List[Item] = get_entities_at_random(
+        item_chances, number_of_items, floor_number
+    )
+
+    for item in items:
+        if floor_number >= 3:
+            if item.equippable is not None:
+                if item.equippable.equipment_type == EquipmentType.WEAPON and random.randint(0, 1) == 1:
+                    item.equippable.die_size += 1
+                    item.equippable.hit_bonus += 1
+                    item.name = f"+1 striking {item.name}"
+                    if floor_number >= 6 and random.randint(0, 1) == 1:
+                        item.equippable.die_size += 1
+                        item.equippable.hit_bonus += 1
+                        item.name = f"+2 greater striking {item.name}"
+
+    for entity in monsters + items:
+        while True:
+            x = random.randint(1, dungeon.width - 1)
+            y = random.randint(1, dungeon.height - 1)
+
+            not_in_room = True
+
+            if dungeon.tiles["walkable"][x, y]:
+                for room in rooms:
+                    if room.x1 <= x <= room.x2 and room.y1 <= y <= room.y2:
+                        not_in_room = False
+
+                if not_in_room:
+                    if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+                        entity.spawn(dungeon, x, y)
+                        break
+
+
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]
 ) -> Iterator[Tuple[int, int]]:
@@ -241,5 +290,9 @@ def generate_dungeon(
 
         # Finally, append the new room to the room list.
         rooms.append(new_room)
+    
+    # sprinkle in some extra items/mobs randomly
+    place_hallway_entities(rooms, dungeon, engine.game_world.current_floor)
+
 
     return dungeon
