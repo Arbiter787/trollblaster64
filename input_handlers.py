@@ -176,10 +176,37 @@ class EventHandler(BaseEventHandler):
             self.engine.message_log.add_message(exc.args[0], color.impossible)
             return False  # Skip enemy turn on exceptions.
 
-        new_animations = self.engine.handle_enemy_turns()
-        if len(new_animations) > 0:
-            for i in new_animations:
-                self.animation.append(i)
+        # if player speed is not default
+        if self.engine.player.speed != 0:
+
+            # if player is fast, then give them extra turns 
+            if self.engine.player.speed > 0:
+                if self.engine.player.turn_skip > 0:
+                    self.engine.player.turn_skip -= 1
+                elif self.engine.player.turn_skip <= 0:
+                    new_animations = self.engine.handle_enemy_turns()
+                    
+                    if len(new_animations) > 0:
+                        for i in new_animations:
+                            self.animation.append(i)
+                    
+                    self.engine.player.reset_turn_skip()
+
+            # if player is slow, then give the monsters extra turns
+            else:
+                for i in range(self.engine.player.speed, 1):
+                    new_animations = self.engine.handle_enemy_turns()
+                    
+                    if len(new_animations) > 0:
+                        for i in new_animations:
+                            self.animation.append(i)
+        
+        # if speed is default just take monster turn as normal
+        else:
+            new_animations = self.engine.handle_enemy_turns()        
+            if len(new_animations) > 0:
+                for i in new_animations:
+                    self.animation.append(i)
 
         self.engine.update_fov()
         return True

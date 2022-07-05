@@ -20,7 +20,7 @@ class BaseAncestry(BaseComponent):
         int_boost: int = 0,
         wis_boost: int = 0,
         cha_boost: int = 0,
-        speed: float = 0,
+        speed: int = 0,
         size: int = 0,
         hp_boost: int = 8,
         traits: list[str] = [''],

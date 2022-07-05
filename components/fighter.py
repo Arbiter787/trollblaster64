@@ -183,6 +183,10 @@ class Player(BaseStats):
             crit_bonus = None
         
         return to_hit, num_dice, die_size, dam_bonus, attack_traits, crit_bonus
+    
+    @property
+    def speed(self) -> int:
+        return self.ancestry.speed
 
 
 class Monster(BaseStats):

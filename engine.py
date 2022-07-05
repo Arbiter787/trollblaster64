@@ -33,12 +33,28 @@ class Engine:
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
                 try:
-                    # get any animations caused by ai actions
-                    new_animation = entity.ai.perform()
-                    if new_animation is not None:
-                        if len(new_animation) > 0:
-                            for i in new_animation:
-                                animations.append(i)
+                    # give each ai a number of moves according to its speed
+                    if entity.speed >= 0:
+                        for i in range(0, entity.speed + 1):
+                            # get any animations caused by ai actions
+                            new_animation = entity.ai.perform()
+                            if new_animation is not None:
+                                if len(new_animation) > 0:
+                                    for i in new_animation:
+                                        animations.append(i)
+                    
+                    # if ai is slow then potentially skip its turn
+                    elif entity.speed < 0:
+                        if entity.turn_skip < 0:
+                            pass
+                        elif entity.turn_skip >= 0:
+                            new_animation = entity.ai.perform()
+                            if new_animation is not None:
+                                if len(new_animation) > 0:
+                                    for i in new_animation:
+                                        animations.append(i)
+                            entity.reset_turn_skip()
+
                 except exceptions.Impossible:
                     pass  # Ignore impossible action exceptions from AI.
         

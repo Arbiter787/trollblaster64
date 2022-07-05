@@ -100,6 +100,7 @@ class Actor (Entity):
         fighter: BaseStats,
         inventory: Inventory,
         level: Level,
+        effects: None = None,
     ):
         super().__init__(
             x=x,
@@ -125,10 +126,26 @@ class Actor (Entity):
         self.level = level
         self.level.parent = self
 
+        self.effects = effects
+
+        self.turn_skip = 0
+
+    @property
+    def speed(self) -> int:
+        """Return the speed from the fighter plus any modifiers - if none is found use default speed (0)"""
+        # TODO: work in speed modifiers
+        try:
+            return self.fighter.speed
+        except AttributeError:
+            return 0
+
     @property
     def is_alive(self) -> bool:
         """Returns True as long as this actor can perform actions."""
         return bool(self.ai)
+    
+    def reset_turn_skip(self) -> None:
+        self.turn_skip = self.speed
 
 
 class Item(Entity):
