@@ -257,9 +257,6 @@ class ProjectileConsumable(Consumable):
                     hit_actor = self.engine.game_map.get_actor_at_location(tile_xy[0], tile_xy[1])
                     break
                 else:
-                    self.engine.message_log.add_message(
-                        f"The {self.parent.name} strikes the floor."
-                    )
                     x_y = tile_xy
             
             self.consume()
