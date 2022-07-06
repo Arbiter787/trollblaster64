@@ -3,7 +3,7 @@ from hashlib import new
 
 import os
 
-from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union, List
 
 import tcod
 import tcod.event
@@ -407,8 +407,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
     def __init__(self, engine: Engine):
         super().__init__(engine)
-        self.number_of_items_in_inventory = len(self.engine.player.inventory.items)
-        
+        self.number_of_items_in_inventory = len(self.engine.player.inventory.items_stacked)
         self.cursor = 0
 
     def on_render(self, console: tcod.Console) -> None:
@@ -423,6 +422,7 @@ class InventoryEventHandler(AskUserEventHandler):
             if max_name < len(item.name):
                 max_name = len(item.name)
         
+
         height = self.number_of_items_in_inventory + 2
 
         if height <= 3:
@@ -451,15 +451,21 @@ class InventoryEventHandler(AskUserEventHandler):
         )
 
         if self.number_of_items_in_inventory > 0:
-            for i, item in enumerate(self.engine.player.inventory.items):
+            for i, item_list in enumerate(self.engine.player.inventory.items_stacked):
+                item = item_list[0]
+                
                 item_key = chr(ord("a") + i)
 
                 is_equipped = self.engine.player.equipment.item_is_equipped(item)
-
-                item_string = f"({item_key}) {item.name}"
-
+                
+                item_string = item.name
+                
+                if len(item_list) > 1:
+                    item_string = f"{len(item_list)} {item_string}s"
                 if is_equipped:
                     item_string = f"{item_string} (E)"
+                
+                item_string = f"({item_key}) {item_string}"
 
                 if self.cursor == i:
                     console.print(x + 1, y + i + 1, item_string, fg=(0, 0, 0), bg=(255, 255, 255))
@@ -550,11 +556,11 @@ class InventoryEventHandler(AskUserEventHandler):
 
         if 0 <= index <= 26:
             try:
-                selected_item = player.inventory.items[index]
+                selected_item = player.inventory.items_stacked[index]
             except IndexError:
                 self.engine.message_log.add_message("Invalid entry.", color.invalid)
                 return None
-            return self.on_item_selected(selected_item)
+            return self.on_item_selected(selected_item[0])
 
         elif key in CURSOR_Y_KEYS:
             adjust = CURSOR_Y_KEYS[event.sym]
@@ -570,8 +576,8 @@ class InventoryEventHandler(AskUserEventHandler):
             return None
 
         elif key in CONFIRM_KEYS:
-            selected_item = player.inventory.items[self.cursor]
-            return self.on_item_selected(selected_item)
+            selected_item = player.inventory.items_stacked[self.cursor]
+            return self.on_item_selected(selected_item[0])
 
         return super().ev_keydown(event)
 

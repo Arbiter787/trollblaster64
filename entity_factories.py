@@ -132,42 +132,48 @@ confusion_scroll = Item(
     color=color.purple,
     name="Confusion Scroll",
     consumable=consumable.ConfusionConsumable(number_of_turns=5, animation=True, color=color.purple),
-    desc_string="Confuses an enemy for 5 turns"
+    desc_string="Confuses an enemy for 5 turns",
+    stackable=True,
 )
 fireball_scroll = Item(
     char="~",
     color=color.red,
     name="Fireball Scroll",
     consumable=consumable.RadiusDamageConsumable(num_dice=6, die_size=6, radius=3),
-    desc_string="Deals 6d6 damage in a radius"
+    desc_string="Deals 6d6 damage in a radius",
+    stackable=True,
 )
 health_kit = Item(
     char="+",
     color=color.purple,
     name="Health Kit",
     consumable=consumable.HealingConsumable(amount=20),
-    desc_string="Heals for 20 HP"
+    desc_string="Heals for 20 HP",
+    stackable=True,
 )
 lightning_scroll = Item(
     char="~",
     color=color.yellow,
     name="Lightning Scroll",
     consumable=consumable.SingleTargetDamageConsumable(num_dice=4, die_size=12, maximum_range=5, animation=True, color=color.light_blue),
-    desc_string="Deals 4d12 damage to nearby enemy"
+    desc_string="Deals 4d12 damage to nearby enemy",
+    stackable=True,
 )
 teleport_scroll = Item(
     char="~",
     color=color.grey,
     name="Teleportation Scroll",
     consumable=consumable.TeleportConsumable(maximum_range=50),
-    desc_string="Teleports you randomly"
+    desc_string="Teleports you randomly",
+    stackable=True,
 )
 throwing_star = Item(
     char="x",
     color=color.grey,
     name="Throwing Star",
     consumable=consumable.ProjectileConsumable(1, 6, True, color.grey),
-    desc_string="Can be thrown at an enemy"
+    desc_string="Can be thrown at an enemy",
+    stackable=True,
 )
 
 

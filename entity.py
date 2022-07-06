@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from inspect import stack
 import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 from components.fighter import BaseStats
@@ -163,6 +164,7 @@ class Item(Entity):
         consumable: Optional[Consumable] = None,
         equippable: Optional[Equippable] = None,
         desc_string: Optional[str] = None,
+        stackable: Optional[bool] = False,
     ):
         super().__init__(
             x=x,
@@ -175,6 +177,7 @@ class Item(Entity):
         )
 
         self.desc_string = desc_string
+        self.stackable = stackable
 
         self.consumable = consumable
         if self.consumable:
