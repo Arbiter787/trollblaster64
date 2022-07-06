@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Tuple, List
 
+import numpy as np
 import actions
 import color
 import components.ai
@@ -11,6 +12,8 @@ from exceptions import Impossible
 import input_handlers
 import random
 from dice import dice_roller
+import tcod.path
+import animations
 
 if TYPE_CHECKING:
     from entity import Actor, Item
@@ -39,8 +42,10 @@ class Consumable(BaseComponent):
 
 
 class ConfusionConsumable(Consumable):
-    def __init__(self, number_of_turns: int):
+    def __init__(self, number_of_turns: int, animation: Optional[bool] = False, color: Optional[Tuple[int, int, int]] = color.purple):
         self.number_of_turns = number_of_turns
+        self.animation = animation
+        self.color = color
 
     def get_action(self, consumer: Actor) -> input_handlers.SingleRangedAttackHandler:
         self.engine.message_log.add_message(
@@ -51,7 +56,7 @@ class ConfusionConsumable(Consumable):
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
 
-    def activate(self, action: actions.ItemAction) -> None:
+    def activate(self, action: actions.ItemAction) -> Optional[animations.BurstAnimation]:
         consumer = action.entity
         target = action.target_actor
 
@@ -72,6 +77,9 @@ class ConfusionConsumable(Consumable):
             entity=target, previous_ai=target.ai, turns_remaining=self.number_of_turns
         )
         self.consume()
+        if self.animation:
+            animation = animations.BurstAnimation(target, self.color)
+            return animation
 
 
 class HealingConsumable(Consumable):
@@ -93,9 +101,12 @@ class HealingConsumable(Consumable):
 
 
 class RadiusDamageConsumable(Consumable):
-    def __init__(self, num_dice: int, die_size: int, radius: int):
-        self.damage = dice_roller(num_dice, die_size)
+    def __init__(self, num_dice: int, die_size: int, radius: int, animation: Optional[bool] = False, color: Optional[Tuple[int, int, int]] = color.white):
+        self.num_dice = num_dice
+        self.die_size = die_size
         self.radius = radius
+        self.animation = animation
+        self.color = color
 
     def get_action(self, consumer: Actor) -> input_handlers.AreaRangedAttackHandler:
         self.engine.message_log.add_message(
@@ -107,34 +118,44 @@ class RadiusDamageConsumable(Consumable):
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
 
-    def activate(self, action: actions.ItemAction) -> None:
+    def activate(self, action: actions.ItemAction) -> Optional[animations.ExplosionAnimation]:
         target_xy = action.target_xy
 
         if not self.engine.game_map.in_bounds(*action.target_xy):
-            raise Impossible("You cannot target an area that you cannot see.")
+            raise Impossible("You cannot target an area you cannot see.")
         if not self.engine.game_map.visible[target_xy]:
             raise Impossible("You cannot target an area you cannot see.")
 
         targets_hit = False
+        damage = dice_roller(self.num_dice, self.die_size)
+
         for actor in self.engine.game_map.actors:
             if actor.distance(*target_xy) <= self.radius:
                 self.engine.message_log.add_message(
-                    f"The {actor.name} is engulfed in a fiery explosion, taking {self.damage} damage!"
+                    f"The {actor.name} is engulfed in a fiery explosion, taking {damage} damage!"
                 )
-                actor.fighter.take_damage(self.damage)
+                actor.fighter.take_damage(damage)
                 targets_hit = True
 
         if not targets_hit:
             raise Impossible("There are no targets in the radius.")
+        
         self.consume()
+
+        if self.animation:
+            animation = animations.ExplosionAnimation(target_xy[0], target_xy[1], self.radius, self.color)
+            return animation
 
 
 class SingleTargetDamageConsumable(Consumable):
-    def __init__(self, num_dice, die_size, maximum_range: int):
-        self.damage = dice_roller(num_dice, die_size)
+    def __init__(self, num_dice, die_size, maximum_range: int, animation: Optional[bool] = False, color: Optional[Tuple[int, int, int]] = color.white):
+        self.num_dice = num_dice
+        self.die_size = die_size
         self.maximum_range = maximum_range
+        self.animation = animation
+        self.color = color
 
-    def activate(self, action: actions.ItemAction) -> None:
+    def activate(self, action: actions.ItemAction) -> Optional[animations.BurstAnimation]:
         consumer = action.entity
         target = None
         closest_distance = self.maximum_range + 1.0
@@ -148,13 +169,111 @@ class SingleTargetDamageConsumable(Consumable):
                     closest_distance = distance
 
         if target:
+            damage = dice_roller(self.num_dice, self.die_size)
+
             self.engine.message_log.add_message(
-                f"A lightning bolt strikes the {target.name}, dealing {self.damage} damage!"
+                f"A lightning bolt strikes the {target.name}, dealing {damage} damage!"
             )
-            target.fighter.take_damage(self.damage)
+            target.fighter.take_damage(damage)
+            
             self.consume()
+
+            if self.animation:
+                animation = animations.BurstAnimation(target, self.color)
+                return animation
         else:
             raise Impossible("No enemy is close enough to strike.")
+
+
+class ProjectileConsumable(Consumable):
+    """A consumable that shoots a visible projectile in a straight line toward a target."""
+    def __init__(
+        self,
+        num_dice: int, 
+        die_size: int, 
+        reusable: bool = False,
+        projectile_color: Tuple[int, int, int] = color.white
+    ):
+        self.num_dice = num_dice
+        self.die_size = die_size
+        self.reusable = reusable
+        
+        self.projectile_color = projectile_color
+
+    def get_action(self, consumer: Actor) -> input_handlers.SingleRangedAttackHandler:
+        self.engine.message_log.add_message(
+            "Select a target location.", color.needs_target
+        )
+        return input_handlers.SingleRangedAttackHandler(
+            self.engine,
+            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
+        )
+
+    def get_path_to(self, origin: Actor, dest_x: int, dest_y: int) -> List[Tuple[int, int]]:
+        """Compute and return a path from origin to the target coordinates, ignoring terrain.
+
+        If there is no valid path returns an empty list.
+        """
+        # Create a new array the same size as the gamemap, but with all tiles marked as walkable.
+        cost = np.full_like(origin.gamemap.tiles, 1, dtype=np.int8)
+
+        # Create a graph from the cost array and pass that graph to a new pathfinder.
+        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
+        pathfinder = tcod.path.Pathfinder(graph)
+
+        pathfinder.add_root((origin.x, origin.y))  # Set start coordinates.
+
+        # Compute the path to the destination and remove the starting point.
+        path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
+
+        # Convert from List[List[int]] to List[Tuple[int, int]].
+        return [(index[0], index[1]) for index in path]
+
+    def activate(self, action: actions.ItemAction) -> animations.ProjectileAnimation:
+        consumer = action.entity
+        target = action.target_xy
+
+        if not self.engine.game_map.in_bounds(*action.target_xy):
+            raise Impossible("You cannot target an area that you cannot see.")
+        elif not self.engine.game_map.visible[action.target_xy]:
+            raise Impossible("You cannot target an area that you cannot see.")
+        if target[0] == consumer.x and target[1] == consumer.y:
+            raise Impossible("You cannot target yourself!")
+
+        path = self.get_path_to(consumer, target[0], target[1])
+
+        x_y = (consumer.x, consumer.y)
+        hit_actor = None
+
+        if path:
+            for tile_xy in path:
+                if not self.engine.game_map.tiles["walkable"][tile_xy[0], tile_xy[1]]:
+                    break
+                elif self.engine.game_map.get_actor_at_location(tile_xy[0], tile_xy[1]):
+                    x_y = tile_xy
+                    hit_actor = self.engine.game_map.get_actor_at_location(tile_xy[0], tile_xy[1])
+                    break
+                else:
+                    x_y = tile_xy
+            
+            self.consume()
+            if self.reusable:
+                self.parent.place(*x_y, self.engine.game_map)
+            
+            if hit_actor:
+                damage = dice_roller(self.num_dice, self.die_size)
+
+                self.engine.message_log.add_message(
+                    f"The {self.parent.name} strikes the {hit_actor.name}, dealing {damage} damage!"
+                )
+                hit_actor.fighter.take_damage(damage)
+
+            animation = animations.ProjectileAnimation(consumer, x_y[0], x_y[1], color=self.projectile_color)
+            return animation
+
+        else:
+            raise Impossible("Something went wrong with projectile pathfinding. Tell Luke if you see this!")
+            
     
 class TeleportConsumable(Consumable):
     def __init__(self, maximum_range: int):
@@ -167,10 +286,12 @@ class TeleportConsumable(Consumable):
 
         valid_tile = None
 
+        # choose a random tile to teleport to
         for x in range(self.maximum_range ** 2):
             potential_x = 0
             potential_y = 0 
             
+            # keep generating tiles until you have one that hasn't been picked already
             while True:
                 potential_x = random.randint(consumer.x - self.maximum_range, consumer.x + self.maximum_range)
                 potential_y = random.randint(consumer.y - self.maximum_range, consumer.y + self.maximum_range)

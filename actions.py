@@ -5,7 +5,7 @@ from dice import dice_roller
 from typing import Optional, Tuple, TYPE_CHECKING
 
 from equipment_types import EquipmentTraits
-from animations import AttackAnimation
+from animations import BaseAnimation, AttackAnimation
 
 import color
 import exceptions
@@ -78,10 +78,12 @@ class ItemAction(Action):
         """Return the actor at this action's destination."""
         return self.engine.game_map.get_actor_at_location(*self.target_xy)
 
-    def perform(self) -> None:
+    def perform(self) -> Optional[list[BaseAnimation]]:
         """Invoke the item's ability. This action will be given to provide context."""
         if self.item.consumable:
-            self.item.consumable.activate(self)
+            animation = self.item.consumable.activate(self)
+            if animation:
+                return [animation]
 
 
 class DropItem(ItemAction):

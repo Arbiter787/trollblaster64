@@ -131,7 +131,7 @@ confusion_scroll = Item(
     char="~",
     color=color.purple,
     name="Confusion Scroll",
-    consumable=consumable.ConfusionConsumable(number_of_turns=5),
+    consumable=consumable.ConfusionConsumable(number_of_turns=5, animation=True, color=color.purple),
     desc_string="Confuses an enemy for 5 turns"
 )
 fireball_scroll = Item(
@@ -152,7 +152,7 @@ lightning_scroll = Item(
     char="~",
     color=color.yellow,
     name="Lightning Scroll",
-    consumable=consumable.SingleTargetDamageConsumable(num_dice=4, die_size=12, maximum_range=5),
+    consumable=consumable.SingleTargetDamageConsumable(num_dice=4, die_size=12, maximum_range=5, animation=True, color=color.light_blue),
     desc_string="Deals 4d12 damage to nearby enemy"
 )
 teleport_scroll = Item(
@@ -162,6 +162,14 @@ teleport_scroll = Item(
     consumable=consumable.TeleportConsumable(maximum_range=50),
     desc_string="Teleports you randomly"
 )
+throwing_star = Item(
+    char="x",
+    color=color.grey,
+    name="Throwing Star",
+    consumable=consumable.ProjectileConsumable(1, 6, True, color.grey),
+    desc_string="Can be thrown at an enemy"
+)
+
 
 # WEAPONS
 dagger = Item(
