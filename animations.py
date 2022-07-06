@@ -94,6 +94,8 @@ class ProjectileAnimation(BaseAnimation):
         self.target_y = target_y
         self.color = color
 
+        self.last_tile = (self.origin.x, self.origin.y)
+
         self.path = self.get_path_to(self.origin, self.target_x, self.target_y)
         
     def get_path_to(self, origin: Actor, dest_x: int, dest_y: int) -> List[Tuple[int, int]]:
@@ -128,9 +130,25 @@ class ProjectileAnimation(BaseAnimation):
         tile_xy = self.path.pop(0)
         if tile_xy[0] == self.origin.x and tile_xy[1] == self.origin.y:
             return True
+        
+        # print different tiles based on where the projectile is moving
+        if tile_xy[0] != self.last_tile[0]:
+            if tile_xy[1] == self.last_tile[1]:
+                console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="-", fg=self.color)
+            elif tile_xy[1] > self.last_tile[1]:
+                if tile_xy[0] > self.last_tile[0]:
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="\\", fg=self.color)
+                else:
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="/", fg=self.color)
+            else:
+                if tile_xy[0] > self.last_tile[0]:
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="/", fg=self.color)
+                else:
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="\\", fg=self.color)
+        elif tile_xy[1] != self.last_tile[1]:
+            console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="|", fg=self.color)
 
-        console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="-", fg=self.color)
-
+        self.last_tile = tile_xy
         if len(self.path) == 0:
             return True
         else:

@@ -248,12 +248,18 @@ class ProjectileConsumable(Consumable):
         if path:
             for tile_xy in path:
                 if not self.engine.game_map.tiles["walkable"][tile_xy[0], tile_xy[1]]:
+                    self.engine.message_log.add_message(
+                        f"The {self.parent.name} strikes a wall."
+                    )
                     break
                 elif self.engine.game_map.get_actor_at_location(tile_xy[0], tile_xy[1]):
                     x_y = tile_xy
                     hit_actor = self.engine.game_map.get_actor_at_location(tile_xy[0], tile_xy[1])
                     break
                 else:
+                    self.engine.message_log.add_message(
+                        f"The {self.parent.name} strikes the floor."
+                    )
                     x_y = tile_xy
             
             self.consume()
