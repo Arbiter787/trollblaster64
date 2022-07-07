@@ -130,9 +130,14 @@ def get_entities_at_random(
     entities = list(entity_weighted_chances.keys())
     entity_weighted_chance_values = list(entity_weighted_chances.values())
 
-    chosen_entities = copy.deepcopy(random.choices(
+    uncopied_chosen_entities = random.choices(
         entities, weights=entity_weighted_chance_values, k=number_of_entities
-    ))
+    )
+
+    # copy entities to avoid PROBLEMS
+    chosen_entities = []
+    for entity in uncopied_chosen_entities:
+        chosen_entities.append(copy.deepcopy(entity))
 
     return chosen_entities
 

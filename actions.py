@@ -50,9 +50,19 @@ class PickupAction(Action):
 
         for item in self.engine.game_map.items:
             if actor_location_x == item.x and actor_location_y == item.y:
-                  
-                if len(inventory.items) >= inventory.capacity and not item.stackable:
+                
+                # check to see if the item is already stacked in the inventory/is stackable before grabbing
+                if len(inventory.items_stacked) >= inventory.capacity and not item.stackable:
                     raise exceptions.Impossible("Your inventory is full.")
+                elif len(inventory.items_stacked) >= inventory.capacity and item.stackable:
+                    item_stacked = False
+                    for item_list in inventory.items_stacked:
+                        if item.name == item_list[0].name:
+                            item_stacked = True
+                            break
+                    if not item_stacked:
+                        raise exceptions.Impossible("Your inventory is full.")
+
 
                 self.engine.game_map.entities.remove(item)
                 item.parent = self.entity.inventory

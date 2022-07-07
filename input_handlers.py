@@ -212,8 +212,8 @@ class EventHandler(BaseEventHandler):
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
-        if self.engine.game_map.in_bounds(event.tile.x - self.engine.viewport.x_offset, event.tile.y - self.engine.viewport.y_offset):
-            self.engine.mouse_location = event.tile.x - self.engine.viewport.x_offset, event.tile.y - self.engine.viewport.y_offset
+        if self.engine.game_map.in_bounds(event.tile.x - self.engine.viewport.x_offset + 1, event.tile.y - self.engine.viewport.y_offset):
+            self.engine.mouse_location = event.tile.x - self.engine.viewport.x_offset + 1, event.tile.y - self.engine.viewport.y_offset 
 
     def on_render(self, console: tcod.Console) -> None:
         self.engine.render(console)
@@ -430,7 +430,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = max(max_name + 4, len(self.TITLE) + 4)
+        width = max(max_name + 10, len(self.TITLE) + 4)
 
         if self.engine.player.x <= 30:
             x = console.width - width
