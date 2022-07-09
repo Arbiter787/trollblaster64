@@ -27,7 +27,7 @@ player = Actor(
 # ENEMIES
 goblin = Actor(
     char="g",
-    color=(63, 127, 63),
+    color=color.white,   #(63, 127, 63),
     name="Goblin",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -52,7 +52,7 @@ goblin = Actor(
 )
 orc = Actor(
     char="o",
-    color=(63, 127, 63),
+    color=color.white, #(63, 127, 63),
     name="Orc",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -77,7 +77,7 @@ orc = Actor(
 )
 troll = Actor(
     char="T",
-    color=(0, 127, 0),
+    color=color.white, #(0, 127, 0),
     name="Troll",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -102,7 +102,7 @@ troll = Actor(
 )
 ogre = Actor(
     char="O",
-    color=(0, 82, 0),
+    color=color.white, #(0, 82, 0),
     name="Ogre",
     ai_cls=HostileEnemy,
     equipment=Equipment(),

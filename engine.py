@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import lzma
 import pickle
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from tcod.console import Console
 from tcod.map import compute_fov
@@ -70,26 +70,32 @@ class Engine:
         # If a tile is "visible" it should be added to "explored".
         self.game_map.explored |= self.game_map.visible
 
-    def render(self, console: Console) -> None:
-        self.viewport.render(console)
+    def render(self, b_console: Console, i_console: Console, m_console: Console, ui_console: Console, render_center: Optional[Tuple[int, int]] = None) -> None:
+        
+        if render_center:
+            self.viewport.render(b_console, i_console, m_console, render_center)
+        else:
+            self.viewport.render(b_console, i_console, m_console)
 
-        self.message_log.render(console=console, x=21, y=console.height-5, width=40, height=5)
+        render_functions.render_lower_bar(ui_console)
+
+        self.message_log.render(console=ui_console, x=21, y=ui_console.height-5, width=40, height=5)
 
         render_functions.render_bar(
-            console=console,
+            console=ui_console,
             current_value=self.player.fighter.hp,
             maximum_value=self.player.fighter.max_hp,
             total_width=20,
         )
 
         render_functions.render_dungeon_level(
-            console=console,
+            console=ui_console,
             dungeon_level=self.game_world.current_floor,
-            location=(0, console.height-2),
+            location=(0, ui_console.height-2),
         )
 
         render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=console.height-6, engine=self
+            console=ui_console, x=21, y=ui_console.height-6, engine=self
         )
 
     def save_as(self, filename: str) -> None:

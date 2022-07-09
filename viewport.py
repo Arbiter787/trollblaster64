@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import numpy as np # type: ignore
 from tcod.console import Console
+
+from entity import Actor
 from game_map import GameMap
-import math
+from render_order import RenderOrder
 
 import tile_types
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity
 
 
 class Viewport:
@@ -49,7 +50,7 @@ class Viewport:
             draw_offset -= draw_min
         return draw_min, draw_max, draw_offset
 
-    def render(self, console: Console) -> None:
+    def render(self, b_console: Console, i_console: Console, m_console: Console, render_center: Optional[Tuple[int, int]] = None) -> None:
         """
         Renders the map.
 
@@ -57,11 +58,18 @@ class Viewport:
         If it isn't, but it's in the "explored" array, draw it with the "dark" colors.
         Otherwise, the default is "SHROUD".
         """
-        self.width = console.width
-        self.height = console.height - 5
+        if render_center:
+            center_x = render_center[0]
+            center_y = render_center[1]
+        else:
+            center_x = self.engine.player.x
+            center_y = self.engine.player.y
 
-        y_min, y_max, self.y_offset = self.get_map_limits(self.game_map.height, console.height-5, self.engine.player.y)
-        x_min, x_max, self.x_offset = self.get_map_limits(self.game_map.width, console.width, self.engine.player.x)
+        self.width = b_console.width
+        self.height = b_console.height - 5
+
+        y_min, y_max, self.y_offset = self.get_map_limits(self.game_map.height, b_console.height, center_y)
+        x_min, x_max, self.x_offset = self.get_map_limits(self.game_map.width, b_console.width, center_x)
 
         viewport_visible = self.game_map.visible[x_min:x_max, y_min:y_max]
         viewport_explored = self.game_map.explored[x_min:x_max, y_min:y_max]
@@ -69,24 +77,24 @@ class Viewport:
 
         console_x_min = 0
         console_y_min = 0
-        console_x_max = console.width
-        console_y_max = console.height
+        console_x_max = b_console.width
+        console_y_max = b_console.height
 
-        if self.game_map.width < console.width:
+        if self.game_map.width < b_console.width:
             console_x_min += self.x_offset
             console_x_max -= self.x_offset
 
             if console_x_max != self.game_map.width + self.x_offset:
                 console_x_max -= 1
         
-        if self.game_map.height < console.height:
+        if self.game_map.height < b_console.height:
             console_y_min += self.y_offset
             console_y_max -= self.y_offset
 
             if console_y_max != self.game_map.height + 5 + self.y_offset:
                 console_y_max -= 1
 
-        console.rgb[console_x_min : console_x_max, console_y_min : console_y_max-5] = np.select(
+        b_console.rgba[console_x_min : console_x_max, console_y_min : console_y_max] = np.select(
             condlist=[viewport_visible, viewport_explored],
             choicelist=[viewport_tiles["light"], viewport_tiles["dark"]],
             default=tile_types.SHROUD,
@@ -99,6 +107,13 @@ class Viewport:
         for entity in entities_sorted_for_rendering:
             # Only print entities that are in the FOV
             if self.game_map.visible[entity.x, entity.y]:
-                console.print(
-                    x=entity.x + self.x_offset, y=entity.y + self.y_offset, string=entity.char, fg=entity.color
-                )
+
+                # if entity is a live actor, print it to the monster console, otherwise print it to the item console
+                if isinstance(entity, Actor) and entity.render_order != RenderOrder.CORPSE:
+                    m_console.print(
+                        x=entity.x + self.x_offset, y=entity.y + self.y_offset, string=entity.char, fg=(255, 255, 255),
+                    )
+                else:
+                    i_console.print(
+                        x=entity.x + self.x_offset, y=entity.y + self.y_offset, string=entity.char, fg=(255, 255, 255),
+                    )

@@ -52,29 +52,29 @@ class AttackAnimation(BaseAnimation):
         y_offset = engine.viewport.y_offset
 
         if self.attacker_location == 'right':
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset, string="-", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset+1, string="/", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset-1, string="\\", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset, string=chr(0xE104), fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset+1, string=chr(0xE107), fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset-1, string=chr(0xE105), fg=[255, 0, 0])
         elif self.attacker_location == 'left':
-            console.print(x=self.x+x_offset+1, y=self.y+y_offset, string="-", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset+1, y=self.y+y_offset-1, string="/", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset+1, y=self.y+y_offset+1, string="\\", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset+1, y=self.y+y_offset, string=chr(0xE103), fg=[255, 0, 0])
+            console.print(x=self.x+x_offset+1, y=self.y+y_offset-1, string=chr(0xE106), fg=[255, 0, 0])
+            console.print(x=self.x+x_offset+1, y=self.y+y_offset+1, string=chr(0xE108), fg=[255, 0, 0])
         elif self.attacker_location == 'below':
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset-1, string="\\|/", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset-1, string=f"{chr(0xE105)}{chr(0xE101)}{chr(0xE106)}", fg=[255, 0, 0])
         elif self.attacker_location == 'above':
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset+1, string="/|\\", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset+1, string=f"{chr(0xE107)}{chr(0xE102)}{chr(0xE108)}", fg=[255, 0, 0])
         elif self.attacker_location == 'below_right':
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset-1, string="\\|", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset, string="-", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset-1, string=f"{chr(0xE105)}{chr(0xE101)}", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset, string=chr(0xE104), fg=[255, 0, 0])
         elif self.attacker_location == 'above_right':
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset, string="-", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset-1, y=self.y+y_offset+1, string="/|", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset, string=chr(0xE104), fg=[255, 0, 0])
+            console.print(x=self.x+x_offset-1, y=self.y+y_offset+1, string=f"{chr(0xE107)}{chr(0xE102)}", fg=[255, 0, 0])
         elif self.attacker_location == 'below_left':
-            console.print(x=self.x+x_offset, y=self.y+y_offset-1, string="|/", fg=[255, 0, 0])
-            console.print(x=self.x+1+x_offset, y=self.y+y_offset, string="-", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset, y=self.y+y_offset-1, string=f"{chr(0xE101)}{chr(0xE106)}", fg=[255, 0, 0])
+            console.print(x=self.x+1+x_offset, y=self.y+y_offset, string=chr(0xE103), fg=[255, 0, 0])
         elif self.attacker_location == 'above_left':
-            console.print(x=self.x+x_offset+1, y=self.y+y_offset, string="-", fg=[255, 0, 0])
-            console.print(x=self.x+x_offset, y=self.y+y_offset+1, string="|\\", fg=[255, 0, 0])
+            console.print(x=self.x+x_offset+1, y=self.y+y_offset, string=chr(0xE103), fg=[255, 0, 0])
+            console.print(x=self.x+x_offset, y=self.y+y_offset+1, string=f"{chr(0xE102)}{chr(0xE108)}", fg=[255, 0, 0])
 
 
         self.frames -= 1

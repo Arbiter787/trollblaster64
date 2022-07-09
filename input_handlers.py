@@ -85,7 +85,7 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
         assert not isinstance(state, Action), f"{self!r} can not handle actions."
         return self
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
         raise NotImplementedError()
 
     def ev_quit(self, event: "tcod.event.Quit") -> Optional[Action]:
@@ -99,15 +99,24 @@ class PopupMessage(BaseEventHandler):
         self.parent = parent_handler
         self.text = text
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
         """Render the parent and dim the result, then print the message on top."""
-        self.parent.on_render(console)
-        console.rgb["fg"] //= 8
-        console.rgb["bg"] //= 8
+        self.parent.on_render(b_console, i_console, m_console, a_console, ui_console)
+        
+        b_console.rgba["fg"] //= 8
+        b_console.rgba["bg"] //= 8
+        i_console.rgba["fg"] //= 8
+        i_console.rgba["bg"] //= 8
+        m_console.rgba["fg"] //= 8
+        m_console.rgba["bg"] //= 8
+        a_console.rgba["fg"] //= 8
+        a_console.rgba["bg"] //= 8
+        ui_console.rgba["fg"] //= 8
+        ui_console.rgba["bg"] //= 8
 
-        console.print(
-            console.width // 2,
-            console.height // 2,
+        ui_console.print(
+            ui_console.width // 2,
+            ui_console.height // 2,
             self.text,
             fg=color.white,
             bg=color.black,
@@ -215,13 +224,13 @@ class EventHandler(BaseEventHandler):
         if self.engine.game_map.in_bounds(event.tile.x - self.engine.viewport.x_offset + 1, event.tile.y - self.engine.viewport.y_offset):
             self.engine.mouse_location = event.tile.x - self.engine.viewport.x_offset + 1, event.tile.y - self.engine.viewport.y_offset 
 
-    def on_render(self, console: tcod.Console) -> None:
-        self.engine.render(console)
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
+        self.engine.render(b_console, i_console, m_console, ui_console)
 
         # check if any animations are queued to play
         if len(self.animation) > 0:
             for i in self.animation:
-                done = i.anim_render(console, self.engine)
+                done = i.anim_render(a_console, self.engine)
                 if done:
                     self.animation.remove(i)  # when animations are done, remove them from queue
 
@@ -259,53 +268,59 @@ class AskUserEventHandler(EventHandler):
 class CharacterScreenEventHandler(AskUserEventHandler):
     TITLE = "Character Information"
 
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
+        super().on_render(b_console, i_console, m_console, a_console, ui_console)
 
         y = 0
 
         width = len(self.TITLE) + 4
 
         if self.engine.player.x <= 30:
-            x = console.width - width
+            x = ui_console.width - width
         else:
             x = 0
 
-        console.draw_frame(
+        ui_console.rgba[x : x + width, y : y + 12] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
+
+        ui_console.draw_frame(
             x=x,
             y=y,
             width=width,
             height=12,
-            title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
+            bg_blend=8,
         )
 
-        console.print(
+        ui_console.print(
+            x=x + width // 2, y=y, string=self.TITLE, alignment=tcod.CENTER
+        )
+
+        ui_console.print(
             x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}"
         )
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}"
         )
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 3, string=f"XP for next level: {self.engine.player.level.experience_to_next_level}"
         )
 
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 5, string=f"To-hit: {self.engine.player.fighter.damage[0]}"
         )
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 6, string=f"AC: {self.engine.player.fighter.ac}"
         )
 
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 8, string=f"Str: {self.engine.player.fighter.str} (mod = {self.engine.player.fighter.str_mod})"
         )
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 9, string=f"Dex: {self.engine.player.fighter.dex} (mod = {self.engine.player.fighter.dex_mod})"
         )
-        console.print(
+        ui_console.print(
             x=x + 1, y=y + 10, string=f"Con: {self.engine.player.fighter.con} (mod = {self.engine.player.fighter.con_mod})"
         )
 
@@ -323,50 +338,55 @@ class LevelUpEventHandler(AskUserEventHandler):
             if player_class == 'fighter':
                 pass
     
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
+        super().on_render(b_console, i_console, m_console, a_console, ui_console)
 
         next_choice = self.engine.player.fighter.player_class.choice_reason[0]
 
         if self.engine.player.x <= 30:
-            x = console.width - 35
+            x = ui_console.width - 35
         else:
             x = 0
+        
+        ui_console.rgba[x : x + 35, 0 : 6] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
 
-        console.draw_frame(
+        ui_console.draw_frame(
             x=x,
             y=0,
             width=35,
             height=6,
-            title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
 
-        console.print(x=x + 1, y=1, string="Congratulations! You leveled up!")
+        ui_console.print(
+            x=x + 35 // 2, y=0, string=self.TITLE, alignment=tcod.CENTER
+        )
+
+        ui_console.print(x=x + 1, y=1, string="Congratulations! You leveled up!")
         if next_choice == 'class_feat':
-            console.print(x=x + 1, y=2, string="Select a class feat.")
+            ui_console.print(x=x + 1, y=2, string="Select a class feat.")
         
         elif next_choice == 'skill_feat':
-            console.print(x=x + 1, y=2, string="Select a skill feat.")
+            ui_console.print(x=x + 1, y=2, string="Select a skill feat.")
         
         elif next_choice == 'general_feat':
-            console.print(x=x + 1, y=2, string="Select a general feat.")
+            ui_console.print(x=x + 1, y=2, string="Select a general feat.")
         
         elif next_choice == 'ancestry_feat':
-            console.print(x=x + 1, y=2, string="Select an ancestry feat.")
+            ui_console.print(x=x + 1, y=2, string="Select an ancestry feat.")
         
         elif next_choice == 'skill_increase':
-            console.print(x=x + 1, y=2, string="Select a skill to increase.")
+            ui_console.print(x=x + 1, y=2, string="Select a skill to increase.")
         
         elif next_choice == 'ability_boost':
-            console.print(x=x + 1, y=2, string="Select an ability score to boost by 2.")
+            ui_console.print(x=x + 1, y=2, string="Select an ability score to boost by 2.")
         
         elif next_choice == 'weapon_group':
-            console.print(x=x + 1, y=2, string="Select a weapon group to specialize in.")
+            ui_console.print(x=x + 1, y=2, string="Select a weapon group to specialize in.")
 
-        console.print(
+        ui_console.print(
             x=x + 1,
             y=4,
             string=f"a) Constitution (+20 HP, from {self.engine.player.fighter.max_hp})",
@@ -410,12 +430,14 @@ class InventoryEventHandler(AskUserEventHandler):
         self.number_of_items_in_inventory = len(self.engine.player.inventory.items_stacked)
         self.cursor = 0
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
         """Render an inventory menu, which displays the items in the inventory, and the letter to select them.
         Will move to a different position based on where the player is located, so the player can always see where
         they are.
         """
-        super().on_render(console)
+        super().on_render(b_console, i_console, m_console, a_console, ui_console)
+
+        console = ui_console
 
         max_name = 0
         for item in self.engine.player.inventory.items:
@@ -430,7 +452,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = max(max_name + 10, len(self.TITLE) + 4)
+        width = max(max_name + 12, len(self.TITLE) + 4)
 
         if self.engine.player.x <= 30:
             x = console.width - width
@@ -439,15 +461,20 @@ class InventoryEventHandler(AskUserEventHandler):
             x = 0
             info_side = "right"
 
+        ui_console.rgba[x : x + width, y : y + height] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
+
         console.draw_frame(
             x=x,
             y=y,
             width=width,
             height=height,
-            title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
+        )
+
+        ui_console.print(
+            x=x + width // 2, y=y, string=self.TITLE, alignment=tcod.CENTER
         )
 
         if self.number_of_items_in_inventory > 0:
@@ -468,7 +495,7 @@ class InventoryEventHandler(AskUserEventHandler):
                 item_string = f"({item_key}) {item_string}"
 
                 if self.cursor == i:
-                    console.print(x + 1, y + i + 1, item_string, fg=(0, 0, 0), bg=(255, 255, 255))
+                    console.print(x + 1, y + i + 1, f"> {item_string}")
                     
                     # determine height of info window based on item
                     if item.equippable is not None:
@@ -489,15 +516,20 @@ class InventoryEventHandler(AskUserEventHandler):
 
                     # draw an information window for item stats
                     if info_side == "right":
+                        ui_console.rgba[x + width : x + width + info_width, y : y + info_height] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
+
                         console.draw_frame(
                             x=x+width,
                             y=y,
                             width=info_width,
                             height=info_height,
-                            title=item.name,
                             clear=True,
                             fg=(255, 255, 255),
                             bg=(0, 0, 0),
+                        )
+
+                        ui_console.print(
+                            x=x + width + info_width // 2, y=y, string=item.name, alignment=tcod.CENTER
                         )
 
                         if item.equippable is not None:
@@ -517,15 +549,20 @@ class InventoryEventHandler(AskUserEventHandler):
                             console.print(x + width + 1, y + 1, item.desc_string)
                     
                     elif info_side == "left":
+                        ui_console.rgba[x - info_width : x, y : y + info_height] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
+
                         console.draw_frame(
                             x=x-info_width,
                             y=y,
                             width=info_width,
                             height=info_height,
-                            title=item.name,
                             clear=True,
                             fg=(255, 255, 255),
                             bg=(0, 0, 0),
+                        )
+
+                        ui_console.print(
+                            x=x -info_width + info_width // 2, y=y, string=item.name, alignment=tcod.CENTER
                         )
 
                         if item.equippable is not None:
@@ -545,7 +582,7 @@ class InventoryEventHandler(AskUserEventHandler):
                             console.print(x - info_width + 1, y + 1, item.desc_string)
                 
                 else:
-                    console.print(x + 1, y + i + 1, item_string)
+                    console.print(x + 1, y + i + 1, f"  {item_string}")
         else:
             console.print(x + 1, y + 1, "(Empty)")
 
@@ -620,12 +657,19 @@ class SelectIndexHandler(AskUserEventHandler):
         player = self.engine.player
         engine.mouse_location = player.x, player.y
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
         """Highlight the tile under the cursor."""
-        super().on_render(console)
         x, y = self.engine.mouse_location
-        console.rgb["bg"][x+self.engine.viewport.x_offset, y+self.engine.viewport.y_offset] = color.white
-        console.rgb["fg"][x+self.engine.viewport.x_offset, y+self.engine.viewport.y_offset] = color.black
+
+        self.engine.render(b_console, i_console, m_console, ui_console, self.engine.mouse_location)
+        # check if any animations are queued to play
+        if len(self.animation) > 0:
+            for i in self.animation:
+                done = i.anim_render(a_console, self.engine)
+                if done:
+                    self.animation.remove(i)  # when animations are done, remove them from queue
+        
+        a_console.rgba[x+self.engine.viewport.x_offset, y+self.engine.viewport.y_offset] = (0xE007, (255, 255, 255, 255), (0, 0, 0, 0))
 
     def ev_keydown(self, event: "tcod.event.KeyDown") -> Optional[ActionOrHandler]:
         """Check for key movement or confirmation keys."""
@@ -707,14 +751,14 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         self.radius = radius
         self.callback = callback
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
         """Highlight the tile under the cursor."""
-        super().on_render(console)
+        super().on_render(b_console, i_console, m_console, a_console, ui_console)
 
         x, y = self.engine.mouse_location
 
         # Draw a rectangle around the targeted area, so the player can see the affected tiles.
-        console.draw_frame(
+        ui_console.draw_frame(
             x= x - self.radius - 1 + self.engine.viewport.x_offset,
             y=y - self.radius - 1 + self.engine.viewport.y_offset,
             width=self.radius ** 2,
@@ -786,26 +830,31 @@ class GameOverEventHandler(EventHandler):
         elif event.sym == tcod.event.K_n:
             return MainMenu()
     
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
+        super().on_render(b_console, i_console, m_console, a_console, ui_console)
         
-        x = console.width // 2 - 10
-        y = console.height // 2 - 3
+        x = ui_console.width // 2 - 10
+        y = ui_console.height // 2 - 3
 
-        console.draw_frame(
+        ui_console.rgba[x : x + 21, y : y + 7] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
+
+        ui_console.draw_frame(
             x=x,
             y=y,
             width=21,
             height=7,
-            title="Game Over",
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
 
-        console.print(x + 10, y + 2, "You died!", fg=(255, 0, 0), alignment=tcod.CENTER)
-        console.print(x + 10, y + 4, "n -  Main Menu", alignment=tcod.CENTER)
-        console.print(x + 10, y + 5, "esc - Quit", alignment=tcod.CENTER)
+        ui_console.print(
+            x=x + 10, y=y, string="Game Over", alignment=tcod.CENTER
+        )
+
+        ui_console.print(x + 10, y + 2, "You died!", fg=(255, 0, 0), alignment=tcod.CENTER)
+        ui_console.print(x + 10, y + 4, "n -  Main Menu", alignment=tcod.CENTER)
+        ui_console.print(x + 10, y + 5, "esc - Quit", alignment=tcod.CENTER)
 
 
 class HistoryViewer(EventHandler):
@@ -815,10 +864,10 @@ class HistoryViewer(EventHandler):
         self.log_length = len(engine.message_log.messages)
         self.cursor = self.log_length - 1
 
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)  # Draw the main state as the background.
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
+        super().on_render(b_console, i_console, m_console, a_console, ui_console)  # Draw the main state as the background.
 
-        log_console = tcod.Console(console.width - 6, console.height - 6)
+        log_console = tcod.Console(ui_console.width - 6, ui_console.height - 6)
 
         # Draw a frame with a custom banner title.
         log_console.draw_frame(0, 0, log_console.width, log_console.height)
@@ -835,7 +884,7 @@ class HistoryViewer(EventHandler):
             log_console.height - 2,
             self.engine.message_log.messages[: self.cursor + 1],
         )
-        log_console.blit(console, 3, 3)
+        log_console.blit(ui_console, 3, 3)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[MainGameEventHandler]:
         # Fancy conditional movement to make it feel right.
@@ -862,22 +911,22 @@ class HistoryViewer(EventHandler):
 class MainMenu(BaseEventHandler):
     """Handle the main menu rendering and input."""
 
-    def on_render(self, console: tcod.console) -> None:
+    def on_render(self, b_console: tcod.Console, i_console: tcod.Console, m_console: tcod.Console, a_console: tcod.Console, ui_console: tcod.Console) -> None:
         """Render the main menu on a background image."""
-        console.draw_semigraphics(setup_game.background_image, 0, 0)
+        ui_console.draw_semigraphics(setup_game.background_image, 0, 0)
 
-        console.print(
-            console.width // 2,
-            console. height // 2 - 4,
+        ui_console.print(
+            ui_console.width // 2,
+            ui_console.height // 2 - 4,
             "TrollBlaster 64",
             fg=color.menu_title,
             bg=color.black,
             alignment=tcod.CENTER,
             bg_blend=tcod.BKGND_ALPHA(64),
         )
-        console.print(
-            console.width // 2,
-            console.height - 2,
+        ui_console.print(
+            ui_console.width // 2,
+            ui_console.height - 2,
             "By Wmss",
             fg=color.menu_title,
             alignment=tcod.CENTER,
@@ -887,9 +936,9 @@ class MainMenu(BaseEventHandler):
         for i, text in enumerate(
             ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"]
         ):
-            console.print(
-                console.width // 2,
-                console.height // 2 - 2 + i,
+            ui_console.print(
+                ui_console.width // 2,
+                ui_console.height // 2 - 2 + i,
                 text.ljust(menu_width),
                 fg=color.menu_text,
                 bg=color.black,

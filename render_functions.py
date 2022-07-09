@@ -10,6 +10,10 @@ if TYPE_CHECKING:
     from game_map import GameMap
 
 
+def render_lower_bar(console: Console):
+    console.rgba[0 : console.width, console.height - 5 : console.height] = (ord(" "), (0, 0, 0, 255), (0, 0, 0, 255))
+
+
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     if not game_map.in_bounds(x, y) or not game_map.visible[x, y]:
         return ""
@@ -26,11 +30,11 @@ def render_bar(
 ) -> None:
     bar_width = int(float(current_value) / maximum_value * total_width)
 
-    console.draw_rect(x=0, y=console.height-5, width=20, height=1, ch=1, bg=color.bar_empty)
+    console.draw_rect(x=0, y=console.height-5, width=20, height=1, ch=1, bg=color.bar_empty, bg_blend=8)
 
     if bar_width > 0:
         console.draw_rect(
-            x=0, y=console.height-5, width=bar_width, height=1, ch=1, bg=color.bar_filled
+            x=0, y=console.height-5, width=bar_width, height=1, ch=1, bg=color.bar_filled, bg_blend=8
         )
 
     console.print(
@@ -46,7 +50,7 @@ def render_dungeon_level(
     """
     x, y = location
 
-    console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")
+    console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}", fg=color.white)
 
 
 def render_names_at_mouse_location(
@@ -58,4 +62,4 @@ def render_names_at_mouse_location(
         x=mouse_x, y=mouse_y, game_map=engine.game_map
     )
 
-    console.print(x=x, y=y, string=names_at_mouse_location)
+    console.print(x=x, y=y, string=names_at_mouse_location, fg=color.white)
