@@ -810,6 +810,11 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.K_SLASH:
             return LookHandler(self.engine)
 
+        elif key == tcod.event.K_PLUS or key == tcod.event.K_KP_PLUS:
+            self.engine.set_magnification("in")
+        elif key == tcod.event.K_MINUS or key == tcod.event.K_KP_MINUS:
+            self.engine.set_magnification("out")
+
         # No valid key was pressed.
         return action
 

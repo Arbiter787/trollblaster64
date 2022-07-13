@@ -10,13 +10,13 @@ main_tilemap = [
     0xE007, # cursor
     ord("?"), # empty
     ord("+"), # health kit
-    ord("~"), # tele scroll
-    ord("~"), # confusion scroll
-    ord("~"), # lightning scroll
-    ord("~"), # fire scroll
+    0xE00A, # tele scroll
+    0xE00B, # confusion scroll
+    0xE00C, # lightning scroll
+    0xE00D, # fire scroll
     ord("/"), # generic weapon
     ord(")"), # generic shield
-    ord("]"), # generic armor
+    ord("["), # generic armor
     ord("x"), # throwing star
     ord("?"), # empty
     ord("@"), # player

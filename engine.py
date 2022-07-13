@@ -27,6 +27,13 @@ class Engine:
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
+        self.magnification = 2
+
+    def set_magnification(self, zoom: str) -> None:
+        if zoom == "in" and self.magnification < 2:
+            self.magnification *= 2
+        elif zoom == "out" and self.magnification > 0.25:
+            self.magnification /= 2
 
     def handle_enemy_turns(self) -> list[BaseAnimation]:
         animations = []

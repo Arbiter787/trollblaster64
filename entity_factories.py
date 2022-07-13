@@ -128,7 +128,7 @@ ogre = Actor(
 
 # CONSUMABLES
 confusion_scroll = Item(
-    char="~",
+    char=chr(0xE00B),
     color=color.purple,
     name="Confusion Scroll",
     consumable=consumable.ConfusionConsumable(number_of_turns=5, animation=True, color=color.purple),
@@ -136,7 +136,7 @@ confusion_scroll = Item(
     stackable=True,
 )
 fireball_scroll = Item(
-    char="~",
+    char=chr(0xE00D),
     color=color.red,
     name="Fireball Scroll",
     consumable=consumable.RadiusDamageConsumable(num_dice=6, die_size=6, radius=3),
@@ -152,7 +152,7 @@ health_kit = Item(
     stackable=True,
 )
 lightning_scroll = Item(
-    char="~",
+    char=chr(0xE00C),
     color=color.yellow,
     name="Lightning Scroll",
     consumable=consumable.SingleTargetDamageConsumable(num_dice=4, die_size=12, maximum_range=5, animation=True, color=color.light_blue),
@@ -160,7 +160,7 @@ lightning_scroll = Item(
     stackable=True,
 )
 teleport_scroll = Item(
-    char="~",
+    char=chr(0xE00A),
     color=color.grey,
     name="Teleportation Scroll",
     consumable=consumable.TeleportConsumable(maximum_range=50),

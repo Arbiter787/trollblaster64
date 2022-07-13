@@ -25,20 +25,25 @@ def render_context(
     handler: input_handlers.BaseEventHandler
 ) -> None:
     """Render the given context using the provided console render and input handler."""
+
+    try:
+        mag = handler.engine.magnification
+    except AttributeError:
+        mag = 2
     
     # console to render base map objects (background console)
-    b_console = context.new_console(magnification=2, order="F")
+    b_console = context.new_console(magnification=mag, order="F")
 
     # console to render items
-    i_console = context.new_console(magnification=2, order="F")
+    i_console = context.new_console(magnification=mag, order="F")
     i_console.rgba[:] = 0x20, (0, 0, 0, 0), (0, 0, 0, 0)
 
     # console to render actors (monster console)
-    m_console = context.new_console(magnification=2, order="F")
+    m_console = context.new_console(magnification=mag, order="F")
     m_console.rgba[:] = 0x20, (0, 0, 0, 0), (0, 0, 0, 0)
 
     # console to render animations
-    a_console = context.new_console(magnification=2, order="F")
+    a_console = context.new_console(magnification=mag, order="F")
     a_console.rgba[:] = 0x20, (0, 0, 0, 0), (0, 0, 0, 0)
 
     # console to render UI elements

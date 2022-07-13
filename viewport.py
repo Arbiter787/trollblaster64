@@ -91,7 +91,7 @@ class Viewport:
             console_y_min += self.y_offset
             console_y_max -= self.y_offset
 
-            if console_y_max != self.game_map.height + 5 + self.y_offset:
+            if console_y_max != self.game_map.height + self.y_offset:
                 console_y_max -= 1
 
         b_console.rgba[console_x_min : console_x_max, console_y_min : console_y_max] = np.select(

@@ -134,19 +134,19 @@ class ProjectileAnimation(BaseAnimation):
         # print different tiles based on where the projectile is moving
         if tile_xy[0] != self.last_tile[0]:
             if tile_xy[1] == self.last_tile[1]:
-                console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="-", fg=self.color)
+                console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string=chr(0xE109), fg=self.color)
             elif tile_xy[1] > self.last_tile[1]:
                 if tile_xy[0] > self.last_tile[0]:
-                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="\\", fg=self.color)
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string=chr(0xE10C), fg=self.color)
                 else:
-                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="/", fg=self.color)
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string=chr(0xE10B), fg=self.color)
             else:
                 if tile_xy[0] > self.last_tile[0]:
-                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="/", fg=self.color)
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string=chr(0xE10B), fg=self.color)
                 else:
-                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="\\", fg=self.color)
+                    console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string=chr(0xE10C), fg=self.color)
         elif tile_xy[1] != self.last_tile[1]:
-            console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string="|", fg=self.color)
+            console.print(x=tile_xy[0] + x_offset, y=tile_xy[1] + y_offset, string=chr(0xE10A), fg=self.color)
 
         self.last_tile = tile_xy
         if len(self.path) == 0:
@@ -169,10 +169,10 @@ class BurstAnimation(BaseAnimation):
         x_offset = engine.viewport.x_offset
         y_offset = engine.viewport.y_offset
 
-        console.print(x=self.x + x_offset - 1, y=self.y + y_offset - 1, string="\\|/", fg=self.color)
-        console.print(x=self.x + x_offset - 1, y=self.y + y_offset, string="-", fg=self.color)
-        console.print(x=self.x + x_offset + 1, y=self.y + y_offset, string="-", fg=self.color)
-        console.print(x=self.x + x_offset - 1, y=self.y + y_offset + 1, string="/|\\", fg=self.color)
+        console.print(x=self.x + x_offset - 1, y=self.y + y_offset - 1, string=f"{chr(0xE105)}{chr(0xE101)}{chr(0xE106)}", fg=self.color)
+        console.print(x=self.x + x_offset - 1, y=self.y + y_offset, string=0xE104, fg=self.color)
+        console.print(x=self.x + x_offset + 1, y=self.y + y_offset, string=0xE103, fg=self.color)
+        console.print(x=self.x + x_offset - 1, y=self.y + y_offset + 1, string=f"{chr(0xE107)}{chr(0xE102)}{chr(0xE108)}", fg=self.color)
 
         self.frames -= 1
 
